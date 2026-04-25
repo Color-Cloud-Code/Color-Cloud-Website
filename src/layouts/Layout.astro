@@ -38,13 +38,32 @@ const { title } = Astro.props;
       <div class="taskbar-items-container"></div>
     </div>
 
+    <!-- Eigener Cursor -->
+    <div id="custom-cursor"></div>
+
     <script is:inline>
       (function() {
         const init = () => {
           const preloader = document.getElementById('preloader');
           const container = document.getElementById('cursor-trail-container');
+          const customCursor = document.getElementById('custom-cursor');
           
           window.scrollTo(0, 0);
+          
+          // Einstellungen laden
+          const customCursorEnabled = localStorage.getItem('customCursorEnabled') === 'true';
+          const cursorSize = parseInt(localStorage.getItem('cursorSize') || '32');
+          
+          if (customCursorEnabled && customCursor) {
+            customCursor.style.display = 'block';
+            customCursor.style.width = cursorSize + 'px';
+            customCursor.style.height = cursorSize + 'px';
+            document.body.style.cursor = 'none';
+            // Alle Links und Buttons ebenfalls cursor: none geben
+            const style = document.createElement('style');
+            style.innerHTML = `* { cursor: none !important; }`;
+            document.head.appendChild(style);
+          }
           document.documentElement.style.overflow = 'hidden';
           document.body.style.overflow = 'hidden';
 
@@ -288,6 +307,13 @@ const { title } = Astro.props;
           window.addEventListener('mousemove', (e) => {
             mouseX = e.clientX;
             mouseY = e.clientY;
+            
+            // Eigener Cursor folgt der Maus
+            if (customCursor && customCursorEnabled) {
+              customCursor.style.left = mouseX + 'px';
+              customCursor.style.top = mouseY + 'px';
+            }
+
             if (dots[0].x === 0 && dots[0].y === 0) {
               dots.forEach(d => { d.x = mouseX; d.y = mouseY; });
             }
@@ -575,6 +601,22 @@ const { title } = Astro.props;
   .taskbar-item.active {
     border-color: #38bdf8;
     box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  }
+
+  /* --- Custom Cursor --- */
+  #custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 32px;
+    height: 32px;
+    background-image: url('/assets/Standart_curser.cur');
+    background-size: contain;
+    background-repeat: no-repeat;
+    pointer-events: none; /* Klicks gehen durch den Cursor hindurch */
+    z-index: 999999; /* Über allem anderen */
+    display: none; /* Standardmäßig aus */
+    transform: translate(0, 0); /* Verhindert Zittern */
   }
 
   /* Minimiert Zustand */

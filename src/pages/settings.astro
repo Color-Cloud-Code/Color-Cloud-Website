@@ -217,6 +217,17 @@ const pageTitle = "Einstellungen - Color Cloud";
             <span class="slider"></span>
           </label>
         </div>
+        <div class="toggle-group">
+          <span>Eigener Cursor (Standart_curser.cur)</span>
+          <label class="switch">
+            <input type="checkbox" id="custom-cursor-toggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="input-group">
+          <label>Cursor Größe</label>
+          <input type="range" id="cursor-size" min="16" max="128" value="32" style="width: 100%; cursor: pointer;" />
+        </div>
         <div class="input-group">
           <label>Trail Farbe</label>
           <input type="color" id="trail-color" value="#00ffff" style="height: 40px; padding: 2px; cursor: pointer;" />
@@ -246,26 +257,34 @@ const pageTitle = "Einstellungen - Color Cloud";
 
     <script is:inline>
       const loadSettings = () => {
-        const enabled = localStorage.getItem('trailEnabled') !== 'false';
-        const color = localStorage.getItem('trailColor') || '#00ffff';
-        const size = localStorage.getItem('trailSize') || '100';
+        const trailEnabled = localStorage.getItem('trailEnabled') !== 'false';
+        const customCursorEnabled = localStorage.getItem('customCursorEnabled') === 'true';
+        const cursorSize = localStorage.getItem('cursorSize') || '32';
+        const trailColor = localStorage.getItem('trailColor') || '#00ffff';
+        const trailSize = localStorage.getItem('trailSize') || '100';
         const configMode = localStorage.getItem('configMode') === 'true';
 
-        document.getElementById('trail-toggle').checked = enabled;
-        document.getElementById('trail-color').value = color;
-        document.getElementById('trail-size').value = size;
+        document.getElementById('trail-toggle').checked = trailEnabled;
+        document.getElementById('custom-cursor-toggle').checked = customCursorEnabled;
+        document.getElementById('cursor-size').value = cursorSize;
+        document.getElementById('trail-color').value = trailColor;
+        document.getElementById('trail-size').value = trailSize;
         document.getElementById('config-mode').checked = configMode;
       };
 
       document.getElementById('save-settings').addEventListener('click', () => {
-        const enabled = document.getElementById('trail-toggle').checked;
-        const color = document.getElementById('trail-color').value;
-        const size = document.getElementById('trail-size').value;
+        const trailEnabled = document.getElementById('trail-toggle').checked;
+        const customCursorEnabled = document.getElementById('custom-cursor-toggle').checked;
+        const cursorSize = document.getElementById('cursor-size').value;
+        const trailColor = document.getElementById('trail-color').value;
+        const trailSize = document.getElementById('trail-size').value;
         const configMode = document.getElementById('config-mode').checked;
 
-        localStorage.setItem('trailEnabled', enabled);
-        localStorage.setItem('trailColor', color);
-        localStorage.setItem('trailSize', size);
+        localStorage.setItem('trailEnabled', trailEnabled);
+        localStorage.setItem('customCursorEnabled', customCursorEnabled);
+        localStorage.setItem('cursorSize', cursorSize);
+        localStorage.setItem('trailColor', trailColor);
+        localStorage.setItem('trailSize', trailSize);
         localStorage.setItem('configMode', configMode);
 
         alert('Einstellungen gespeichert!');
