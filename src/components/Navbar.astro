@@ -26,28 +26,39 @@
 </nav>
 
 <script>
-  const hamburger = document.getElementById('hamburger');
-  const navLinks = document.querySelector('.nav-links');
-  const body = document.body;
+  const initMobileMenu = () => {
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    const body = document.body;
 
-  hamburger?.addEventListener('click', () => {
-    hamburger.classList.toggle('active');
-    navLinks?.classList.toggle('mobile-active');
-    
-    if (navLinks?.classList.contains('mobile-active')) {
-      body.style.overflow = 'hidden';
-    } else {
-      body.style.overflow = '';
-    }
-  });
+    if (!hamburger) return;
 
-  document.querySelectorAll('.nav-links a').forEach(link => {
-    link.addEventListener('click', () => {
-      hamburger?.classList.remove('active');
-      navLinks?.classList.remove('mobile-active');
-      body.style.overflow = '';
+    // Vorherige Event-Listener entfernen, falls vorhanden (um Duplikate zu vermeiden)
+    const newHamburger = hamburger.cloneNode(true);
+    hamburger.parentNode.replaceChild(newHamburger, hamburger);
+
+    newHamburger.addEventListener('click', () => {
+      newHamburger.classList.toggle('active');
+      navLinks?.classList.toggle('mobile-active');
+      
+      if (navLinks?.classList.contains('mobile-active')) {
+        body.style.overflow = 'hidden';
+      } else {
+        body.style.overflow = '';
+      }
     });
-  });
+
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.addEventListener('click', () => {
+        newHamburger.classList.remove('active');
+        navLinks?.classList.remove('mobile-active');
+        body.style.overflow = '';
+      });
+    });
+  };
+
+  // Initialer Start und bei jedem Seitenwechsel
+  document.addEventListener('astro:page-load', initMobileMenu);
 </script>
 
 <style>
@@ -192,5 +203,4 @@
       font-weight: 600;
     }
   }
-</style>
 </style>
