@@ -30,6 +30,9 @@ const { title } = Astro.props;
     <!-- Hier wird der Inhalt der Seiten eingefügt -->
     <slot />
 
+    <!-- Taskbar für den Desktop-Modus -->
+    <div id="taskbar"></div>
+
     <script is:inline>
       (function() {
         const init = () => {
@@ -66,9 +69,16 @@ const { title } = Astro.props;
 
           function initWindowManager() {
             const configMode = localStorage.getItem('configMode') === 'true';
-            if (!configMode) return;
+            const taskbar = document.getElementById('taskbar');
+            
+            if (!configMode) {
+              if (taskbar) taskbar.classList.remove('show');
+              return;
+            }
 
-            // Master Mouse-Events (Nur einmal für das ganze Dokument)
+            if (taskbar) taskbar.classList.add('show');
+
+            // Master Mouse-Events
             document.addEventListener('mousemove', (e) => {
               if (activeWindow) {
                 e.preventDefault();
@@ -101,10 +111,14 @@ const { title } = Astro.props;
             cards.forEach((card, index) => {
               card.classList.add('window-mode');
               
+              // Fenstertitel auslesen
+              const titleEl = card.querySelector('.card-title, h2, h3');
+              const winTitle = titleEl ? titleEl.innerText.split('\n')[0] : `Fenster ${index + 1}`;
+
               const handle = document.createElement('div');
               handle.className = 'window-handle';
               handle.innerHTML = `
-                <span>⠿ Fenster</span>
+                <span>⠿ ${winTitle}</span>
                 <div class="window-controls">
                   <button class="win-btn min-btn" title="Minimieren">−</button>
                   <button class="win-btn close-btn" title="Schließen">×</button>
@@ -118,7 +132,8 @@ const { title } = Astro.props;
                 el: card,
                 x: startX,
                 y: startY,
-                hasMoved: false
+                hasMoved: false,
+                title: winTitle
               };
 
               card.style.position = 'absolute';
@@ -150,14 +165,35 @@ const { title } = Astro.props;
                 }
               }, true);
 
+              // Taskbar Item erstellen
+              const tbItem = document.createElement('div');
+              tbItem.className = 'taskbar-item';
+              tbItem.innerHTML = `<span>${winTitle}</span>`;
+              tbItem.onclick = () => {
+                const isHidden = card.classList.contains('minimized');
+                if (isHidden) {
+                  card.classList.remove('minimized');
+                  maxZIndex++;
+                  card.style.zIndex = maxZIndex;
+                  tbItem.classList.add('active');
+                } else {
+                  card.classList.add('minimized');
+                  tbItem.classList.remove('active');
+                }
+              };
+              taskbar.appendChild(tbItem);
+              tbItem.classList.add('active'); // Am Anfang sind alle offen
+
               handle.querySelector('.close-btn').onclick = (e) => {
                 e.stopPropagation();
                 card.style.display = 'none';
+                tbItem.style.display = 'none';
               };
 
               handle.querySelector('.min-btn').onclick = (e) => {
                 e.stopPropagation();
-                card.classList.toggle('minimized');
+                card.classList.add('minimized');
+                tbItem.classList.remove('active');
               };
 
               card.style.resize = 'both';
@@ -454,13 +490,56 @@ const { title } = Astro.props;
     background: #ef4444 !important;
   }
 
+  /* --- Taskbar Styles --- */
+  #taskbar {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px); /* Startet versteckt */
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(15px);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    border-radius: 20px;
+    padding: 8px 15px;
+    display: flex;
+    gap: 10px;
+    z-index: 10000;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  }
+
+  #taskbar.show {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .taskbar-item {
+    background: rgba(56, 189, 248, 0.1);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    color: white;
+    padding: 6px 15px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .taskbar-item:hover {
+    background: rgba(56, 189, 248, 0.2);
+    transform: translateY(-3px);
+  }
+
+  .taskbar-item.active {
+    border-color: #38bdf8;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  }
+
   /* Minimiert Zustand */
   .window-mode.minimized {
-    height: 40px !important;
-    min-height: 40px !important;
-    overflow: hidden !important;
-    padding-bottom: 0 !important;
-    resize: none !important;
+    display: none !important;
   }
 
   /* Resize Handle Styling */
