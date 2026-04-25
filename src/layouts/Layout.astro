@@ -99,35 +99,36 @@ const { title } = Astro.props;
               card.style.zIndex = maxZIndex + index;
 
               let isDragging = false;
-              let xOffset = startX;
-              let yOffset = startY;
-              let initialX;
-              let initialY;
+              let startMouseX;
+              let startMouseY;
+              let startXPos = startX;
+              let startYPos = startY;
 
               handle.addEventListener('mousedown', dragStart);
               document.addEventListener('mousemove', drag);
               document.addEventListener('mouseup', dragEnd);
               card.setAttribute('draggable', 'false');
-              card.addEventListener('dragstart', (e) => e.preventDefault());
 
               function dragStart(e) {
-                // Fokus setzen
                 maxZIndex++;
                 card.style.zIndex = maxZIndex;
 
-                // Aktuelle Position aus der Matrix auslesen, um Sprünge zu verhindern
-                const style = window.getComputedStyle(card);
-                const matrix = new DOMMatrixReadOnly(style.transform);
-                xOffset = matrix.m41;
-                yOffset = matrix.m42;
-
-                initialX = e.clientX - xOffset;
-                initialY = e.clientY - yOffset;
-                
                 if (e.target.closest('.window-handle') && !e.target.closest('.window-controls')) {
                   isDragging = true;
                   card.classList.add('dragging');
+                  
+                  // Aktuelle Mausposition speichern
+                  startMouseX = e.clientX;
+                  startMouseY = e.clientY;
+                  
+                  // Aktuelle Fensterposition (aus dem Transform) speichern
+                  const style = window.getComputedStyle(card);
+                  const matrix = new DOMMatrixReadOnly(style.transform);
+                  startXPos = matrix.m41;
+                  startYPos = matrix.m42;
+
                   e.stopPropagation();
+                  e.preventDefault();
                 }
               }
 
@@ -142,13 +143,13 @@ const { title } = Astro.props;
 
               function drag(e) {
                 if (isDragging) {
-                  e.preventDefault();
                   hasMoved = true;
-                  const currentX = e.clientX - initialX;
-                  const currentY = e.clientY - initialY;
-                  xOffset = currentX;
-                  yOffset = currentY;
-                  card.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
+                  // Wie weit wurde die Maus bewegt?
+                  const dx = e.clientX - startMouseX;
+                  const dy = e.clientY - startMouseY;
+                  
+                  // Neue Position = Startposition + Maus-Differenz
+                  card.style.transform = `translate3d(${startXPos + dx}px, ${startYPos + dy}px, 0)`;
                 }
               }
 
