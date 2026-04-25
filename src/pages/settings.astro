@@ -226,33 +226,49 @@ const pageTitle = "Einstellungen - Color Cloud";
           <input type="range" id="trail-size" min="50" max="200" value="100" style="width: 100%; cursor: pointer;" />
         </div>
       </section>
+      <!-- Fenster / Desktop Modus -->
+      <section class="settings-card reveal reveal-scale delay-500">
+        <div class="card-title">🖥️ Desktop Modus</div>
+        <div class="toggle-group">
+          <span>Fenster verschiebbar machen</span>
+          <label class="switch">
+            <input type="checkbox" id="config-mode">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem;">
+          Aktiviert schwebende Fenster. Zurücksetzen mit <kbd style="background: #334155; padding: 2px 5px; border-radius: 4px;">Strg + Shift + +</kbd>
+        </p>
+      </section>
     </div>
 
     <button class="save-btn reveal delay-500 glow-pulse" id="save-settings">Änderungen speichern</button>
 
     <script is:inline>
-      // Einstellungen laden
       const loadSettings = () => {
         const enabled = localStorage.getItem('trailEnabled') !== 'false';
         const color = localStorage.getItem('trailColor') || '#00ffff';
         const size = localStorage.getItem('trailSize') || '100';
+        const configMode = localStorage.getItem('configMode') === 'true';
 
         document.getElementById('trail-toggle').checked = enabled;
         document.getElementById('trail-color').value = color;
         document.getElementById('trail-size').value = size;
+        document.getElementById('config-mode').checked = configMode;
       };
 
-      // Einstellungen speichern
       document.getElementById('save-settings').addEventListener('click', () => {
         const enabled = document.getElementById('trail-toggle').checked;
         const color = document.getElementById('trail-color').value;
         const size = document.getElementById('trail-size').value;
+        const configMode = document.getElementById('config-mode').checked;
 
         localStorage.setItem('trailEnabled', enabled);
         localStorage.setItem('trailColor', color);
         localStorage.setItem('trailSize', size);
+        localStorage.setItem('configMode', configMode);
 
-        alert('Einstellungen gespeichert! Der Effekt wird sofort aktualisiert.');
+        alert('Einstellungen gespeichert!');
         window.location.reload();
       });
 
