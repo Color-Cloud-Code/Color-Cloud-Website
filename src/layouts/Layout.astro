@@ -60,100 +60,107 @@ const { title } = Astro.props;
             }, 1000); 
           }
 
+          let maxZIndex = 2000;
           function initWindowManager() {
             const configMode = localStorage.getItem('configMode') === 'true';
             if (!configMode) return;
 
-            // Hotkey zum Resetten: Strg + Shift + +
             window.addEventListener('keydown', (e) => {
               if (e.ctrlKey && e.shiftKey && (e.key === '+' || e.key === '*')) {
                 localStorage.setItem('configMode', 'false');
-                alert('Konfigurations-Modus deaktiviert. Seite wird neu geladen...');
+                alert('Konfigurations-Modus deaktiviert.');
                 window.location.reload();
               }
             });
 
-            // Alle Karten finden, die Fenster werden sollen
             const cards = document.querySelectorAll('.settings-card, .team-card, .content-card');
             
             cards.forEach((card, index) => {
               card.classList.add('window-mode');
               
-              // Titelleiste zum Ziehen erstellen
               const handle = document.createElement('div');
               handle.className = 'window-handle';
-              handle.innerHTML = '<span>⠿ Fenster ziehen</span>';
+              handle.innerHTML = `
+                <span>⠿ Fenster</span>
+                <div class="window-controls">
+                  <button class="win-btn min-btn" title="Minimieren">−</button>
+                  <button class="win-btn close-btn" title="Schließen">×</button>
+                </div>
+              `;
               card.prepend(handle);
 
-              // Zufällige Startposition für den Desktop-Look (versetzt)
+              const startX = 50 + (index * 40);
+              const startY = 150 + (index * 30);
               card.style.position = 'absolute';
-              card.style.left = (50 + (index * 40)) + 'px';
-              card.style.top = (150 + (index * 30)) + 'px';
-              card.style.width = '300px';
-              card.style.zIndex = '100';
+              card.style.left = '0px';
+              card.style.top = '0px';
+              card.style.transform = `translate3d(${startX}px, ${startY}px, 0)`;
+              card.style.width = '320px';
+              card.style.zIndex = maxZIndex + index;
 
-              // Draggable Logik
               let isDragging = false;
-              let currentX;
-              let currentY;
+              let xOffset = startX;
+              let yOffset = startY;
               let initialX;
               let initialY;
-              let xOffset = 0;
-              let yOffset = 0;
 
               handle.addEventListener('mousedown', dragStart);
               document.addEventListener('mousemove', drag);
               document.addEventListener('mouseup', dragEnd);
-
-              // Verhindert das standardmäßige Browser-Drag (Geisterbild von Links/Bildern)
               card.setAttribute('draggable', 'false');
               card.addEventListener('dragstart', (e) => e.preventDefault());
-              handle.addEventListener('dragstart', (e) => e.preventDefault());
 
               function dragStart(e) {
-                // Verhindert, dass der Link ausgelöst wird, wenn man den Griff drückt
-                e.stopPropagation();
-                
+                maxZIndex++;
+                card.style.zIndex = maxZIndex;
                 initialX = e.clientX - xOffset;
                 initialY = e.clientY - yOffset;
-                if (e.target === handle || handle.contains(e.target)) {
+                
+                if (e.target.closest('.window-handle') && !e.target.closest('.window-controls')) {
                   isDragging = true;
-                  card.style.zIndex = '2000';
+                  card.classList.add('dragging');
+                  e.stopPropagation();
                 }
               }
 
-              // Verhindert das "Auslösen" von Links beim Loslassen nach dem Ziehen
+              let hasMoved = false;
               card.addEventListener('click', (e) => {
-                if (configMode) {
-                  // Wenn wir uns im Fenster-Modus befinden, verhindern wir das normale Link-Verhalten
-                  // außer man klickt wirklich auf den Inhalt, nicht während des Ziehens
-                  if (Math.abs(currentX) > 5 || Math.abs(currentY) > 5) {
-                    e.preventDefault();
-                  }
+                if (configMode && hasMoved) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  hasMoved = false;
                 }
               }, true);
 
               function drag(e) {
                 if (isDragging) {
                   e.preventDefault();
-                  currentX = e.clientX - initialX;
-                  currentY = e.clientY - initialY;
+                  hasMoved = true;
+                  const currentX = e.clientX - initialX;
+                  const currentY = e.clientY - initialY;
                   xOffset = currentX;
                   yOffset = currentY;
-                  setTranslate(currentX, currentY, card);
+                  card.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
                 }
               }
 
-              function setTranslate(xPos, yPos, el) {
-                el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+              function dragEnd() {
+                isDragging = false;
+                card.classList.remove('dragging');
               }
 
-              function dragEnd() {
-                initialX = currentX;
-                initialY = currentY;
-                isDragging = false;
-                card.style.zIndex = '1000';
-              }
+              handle.querySelector('.close-btn').onclick = (e) => {
+                e.stopPropagation();
+                card.style.display = 'none';
+              };
+
+              handle.querySelector('.min-btn').onclick = (e) => {
+                e.stopPropagation();
+                card.classList.toggle('minimized');
+              };
+
+              card.style.resize = 'both';
+              card.style.overflow = 'hidden';
             });
           }
 
@@ -412,6 +419,51 @@ const { title } = Astro.props;
     color: #38bdf8;
     text-transform: uppercase;
     letter-spacing: 1px;
+    flex-grow: 1;
+  }
+
+  .window-controls {
+    display: flex;
+    gap: 8px;
+  }
+
+  .win-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+  }
+
+  .win-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .close-btn:hover {
+    background: #ef4444 !important;
+  }
+
+  /* Minimiert Zustand */
+  .window-mode.minimized {
+    height: 40px !important;
+    min-height: 40px !important;
+    overflow: hidden !important;
+    padding-bottom: 0 !important;
+    resize: none !important;
+  }
+
+  /* Resize Handle Styling */
+  .window-mode::-webkit-resizer {
+    background-color: transparent;
+    background-image: radial-gradient(circle at center, #38bdf8 1px, transparent 1px);
+    background-size: 3px 3px;
   }
 
 
