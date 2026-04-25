@@ -1,6 +1,6 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import Navbar from "../components/Navbar.astro";
+import Layout from "../../layouts/Layout.astro";
+import Navbar from "../../components/Navbar.astro";
 
 const pageTitle = "Video of the Day - Color Cloud";
 ---
@@ -17,6 +17,24 @@ const pageTitle = "Video of the Day - Color Cloud";
       gap: 2rem;
     }
 
+    .back-link {
+      align-self: flex-start;
+      max-width: 900px;
+      margin: 0 auto 1rem auto;
+      width: 100%;
+      color: #38bdf8;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+      transition: opacity 0.2s ease;
+    }
+
+    .back-link:hover {
+      opacity: 0.8;
+    }
+
     h1 {
       font-size: 2.5rem;
       background: linear-gradient(to right, #38bdf8, #8b5cf6);
@@ -29,7 +47,6 @@ const pageTitle = "Video of the Day - Color Cloud";
       width: 100%;
       max-width: 900px;
       aspect-ratio: 16 / 9;
-      /* Dezent leuchtender Schatten */
       box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
       border-radius: 16px;
       overflow: hidden;
@@ -38,7 +55,6 @@ const pageTitle = "Video of the Day - Color Cloud";
     }
 
     .video-container:hover {
-      /* Stärkerer Glow und leichtes Anheben beim Hover */
       box-shadow: 0 0 50px rgba(56, 189, 248, 0.5);
       border-color: rgba(56, 189, 248, 0.6);
       transform: translateY(-10px) scale(1.02);
@@ -48,19 +64,22 @@ const pageTitle = "Video of the Day - Color Cloud";
       width: 100%;
       height: 100%;
     }
+
+    p {
+      color: #94a3b8;
+      text-align: center;
+    }
   </style>
 
   <main>
+    <a href="/content" class="back-link">← Zurück zum Content Hub</a>
     <h1>Video of the Day</h1>
     <div class="video-container">
       <iframe
-        width="815"
-        height="458"
         src="https://www.youtube.com/embed/8JtuB0inun0"
-        title="ich ZWINGE ihn sich zu entscheiden| Animierter Podcast  @Senpai Luca"
+        title="Video of the Day"
         frameborder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        referrerpolicy="strict-origin-when-cross-origin"
         allowfullscreen></iframe>
     </div>
     <p>Video of the Day gewählt von den Mitarbeitern von Color Cloud</p>

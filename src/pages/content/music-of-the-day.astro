@@ -1,0 +1,68 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import Navbar from "../../components/Navbar.astro";
+
+const pageTitle = "Music of the Day - Color Cloud";
+---
+
+<Layout title={pageTitle}>
+  <Navbar />
+
+  <style>
+    main {
+      padding: 4rem 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .back-link {
+      align-self: flex-start;
+      max-width: 900px;
+      margin: 0 auto 1rem auto;
+      width: 100%;
+      color: #38bdf8;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(to right, #38bdf8, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .placeholder {
+      width: 100%;
+      max-width: 900px;
+      height: 400px;
+      background: rgba(30, 41, 59, 0.5);
+      border: 2px dashed rgba(56, 189, 248, 0.3);
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      color: #94a3b8;
+    }
+
+    .icon {
+      font-size: 4rem;
+    }
+  </style>
+
+  <main>
+    <a href="/content" class="back-link">← Zurück zum Content Hub</a>
+    <h1>Music of the Day</h1>
+    <div class="placeholder">
+      <div class="icon">🎵</div>
+      <p>Hier erscheint bald der tägliche Soundtrack.</p>
+    </div>
+  </main>
+</Layout>
