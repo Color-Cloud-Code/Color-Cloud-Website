@@ -61,9 +61,32 @@ const { title } = Astro.props;
           }
 
           let maxZIndex = 2000;
+          let activeWindow = null;
+          let initialX, initialY;
+
           function initWindowManager() {
             const configMode = localStorage.getItem('configMode') === 'true';
             if (!configMode) return;
+
+            // Master Mouse-Events (Nur einmal für das ganze Dokument)
+            document.addEventListener('mousemove', (e) => {
+              if (activeWindow) {
+                e.preventDefault();
+                activeWindow.hasMoved = true;
+                const x = e.clientX - initialX;
+                const y = e.clientY - initialY;
+                activeWindow.el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+                activeWindow.x = x;
+                activeWindow.y = y;
+              }
+            });
+
+            document.addEventListener('mouseup', () => {
+              if (activeWindow) {
+                activeWindow.el.classList.remove('dragging');
+                activeWindow = null;
+              }
+            });
 
             window.addEventListener('keydown', (e) => {
               if (e.ctrlKey && e.shiftKey && (e.key === '+' || e.key === '*')) {
@@ -91,67 +114,41 @@ const { title } = Astro.props;
 
               const startX = 50 + (index * 40);
               const startY = 150 + (index * 30);
+              const winState = {
+                el: card,
+                x: startX,
+                y: startY,
+                hasMoved: false
+              };
+
               card.style.position = 'absolute';
               card.style.left = '0px';
               card.style.top = '0px';
               card.style.transform = `translate3d(${startX}px, ${startY}px, 0)`;
               card.style.width = '320px';
               card.style.zIndex = maxZIndex + index;
-
-              let isDragging = false;
-              let currentX = startX;
-              let currentY = startY;
-              let initialX;
-              let initialY;
-
-              handle.addEventListener('mousedown', dragStart);
-              document.addEventListener('mousemove', drag);
-              document.addEventListener('mouseup', dragEnd);
               card.setAttribute('draggable', 'false');
 
-              function dragStart(e) {
-                maxZIndex++;
-                card.style.zIndex = maxZIndex;
-
-                // Prüfen, ob auf den Griff (aber nicht auf Buttons) geklickt wurde
+              handle.addEventListener('mousedown', (e) => {
                 if (e.target.closest('.window-handle') && !e.target.closest('.window-controls')) {
-                  isDragging = true;
+                  maxZIndex++;
+                  card.style.zIndex = maxZIndex;
+                  activeWindow = winState;
+                  initialX = e.clientX - winState.x;
+                  initialY = e.clientY - winState.y;
                   card.classList.add('dragging');
-                  
-                  // Start-Differenz berechnen
-                  initialX = e.clientX - currentX;
-                  initialY = e.clientY - currentY;
-
                   e.stopPropagation();
                   e.preventDefault();
                 }
-              }
+              });
 
-              let hasMoved = false;
               card.addEventListener('click', (e) => {
-                if (configMode && hasMoved) {
+                if (configMode && winState.hasMoved) {
                   e.preventDefault();
                   e.stopPropagation();
-                  hasMoved = false;
+                  winState.hasMoved = false;
                 }
               }, true);
-
-              function drag(e) {
-                if (isDragging) {
-                  hasMoved = true;
-                  // Neue Position berechnen
-                  currentX = e.clientX - initialX;
-                  currentY = e.clientY - initialY;
-                  
-                  // Fenster verschieben
-                  card.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
-                }
-              }
-
-              function dragEnd() {
-                isDragging = false;
-                card.classList.remove('dragging');
-              }
 
               handle.querySelector('.close-btn').onclick = (e) => {
                 e.stopPropagation();
