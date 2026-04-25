@@ -36,34 +36,48 @@ const { title } = Astro.props;
           const preloader = document.getElementById('preloader');
           const container = document.getElementById('cursor-trail-container');
           
-          // Absoluter Scroll-Lock und Position zurücksetzen
           window.scrollTo(0, 0);
           document.documentElement.style.overflow = 'hidden';
           document.body.style.overflow = 'hidden';
 
-          // Ladebildschirm nach dem Laden ausblenden
           if (preloader) {
             setTimeout(() => {
               preloader.style.opacity = '0';
               setTimeout(() => {
                 preloader.style.display = 'none';
-                // Scrollen wieder erlauben
                 document.documentElement.classList.remove('loading');
                 document.documentElement.style.overflow = 'auto';
                 document.body.style.overflow = 'auto';
                 
-                // Spur erst jetzt sichtbar machen
                 isLoaded = true;
                 if (container) container.style.opacity = '1';
+
+                // Initialisiere Scroll-Animationen nach dem Laden
+                initScrollAnimations();
               }, 500);
             }, 1000); 
           }
 
+          function initScrollAnimations() {
+            const observerOptions = {
+              threshold: 0.1,
+              rootMargin: "0px 0px -50px 0px"
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+              entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add('revealed');
+                }
+              });
+            }, observerOptions);
+
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+          }
+
           if (!container) return;
+          let isLoaded = false;
 
-          let isLoaded = false; // Flag: Ist der Loader weg?
-
-          // Einstellungen laden
           const enabled = localStorage.getItem('trailEnabled') !== 'false';
           const color = localStorage.getItem('trailColor') || '#00ffff';
           const sizeMultiplier = parseInt(localStorage.getItem('trailSize') || '100') / 100;
@@ -71,7 +85,6 @@ const { title } = Astro.props;
           if (!enabled) {
             container.style.display = 'none';
           } else {
-            // Farbe in RGBA umwandeln für den Glow (0.4 Opacity)
             const hexToRgb = (hex) => {
               const r = parseInt(hex.slice(1, 3), 16);
               const g = parseInt(hex.slice(3, 5), 16);
@@ -86,7 +99,6 @@ const { title } = Astro.props;
           let mouseX = 0;
           let mouseY = 0;
 
-          // Erstelle die Tropfen-Elemente
           for (let i = 0; i < numDots; i++) {
             const dotEl = document.createElement('div');
             dotEl.className = 'trail-dot';
@@ -101,8 +113,6 @@ const { title } = Astro.props;
           window.addEventListener('mousemove', (e) => {
             mouseX = e.clientX;
             mouseY = e.clientY;
-            
-            // Initialisierung auf die erste Mausposition
             if (dots[0].x === 0 && dots[0].y === 0) {
               dots.forEach(d => { d.x = mouseX; d.y = mouseY; });
             }
@@ -111,53 +121,36 @@ const { title } = Astro.props;
           function animate() {
             let targetX = mouseX;
             let targetY = mouseY;
-
-            // Video-Bereiche finden
             const videoRects = Array.from(document.querySelectorAll('iframe, .video-container')).map(el => el.getBoundingClientRect());
 
             dots.forEach((dot, index) => {
               const dx = targetX - dot.x;
               const dy = targetY - dot.y;
-              
               dot.x += dx * 0.15;
               dot.y += dy * 0.15;
-              
               if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
                 dot.angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
               }
-
-              // Prüfen, ob dieser Punkt gerade unter einem Video ist
               const isUnderVideo = videoRects.some(rect => 
                 dot.x > rect.left && dot.x < rect.right && 
                 dot.y > rect.top && dot.y < rect.bottom
               );
-
               dot.el.style.left = dot.x + 'px';
               dot.el.style.top = dot.y + 'px';
               dot.el.style.transform = `translate(-50%, -50%) rotate(${dot.angle}deg)`;
-              
-              // Sichtbarkeit: Wenn unter Video -> 0, sonst Standard-Opacity
               const baseOpacity = (1 - (index / numDots));
               dot.el.style.opacity = isUnderVideo ? '0' : baseOpacity.toString();
-              
               targetX = dot.x;
               targetY = dot.y;
             });
-            
             requestAnimationFrame(animate);
           }
-          
           animate();
 
-          document.addEventListener('mouseleave', () => { 
-            if (isLoaded) container.style.opacity = '0'; 
-          });
-          document.addEventListener('mouseenter', () => { 
-            if (isLoaded) container.style.opacity = '1'; 
-          });
+          document.addEventListener('mouseleave', () => { if (isLoaded) container.style.opacity = '0'; });
+          document.addEventListener('mouseenter', () => { if (isLoaded) container.style.opacity = '1'; });
         };
 
-        // Startet, sobald das DOM bereit ist
         if (document.readyState === 'complete') init();
         else window.addEventListener('load', init);
       })();
@@ -174,22 +167,52 @@ const { title } = Astro.props;
 
   html {
     height: 100%;
+    scroll-behavior: smooth;
   }
 
   body {
     margin: 0;
     width: 100%;
-    min-height: 100%; /* Fix: Ermöglicht das Scrollen bei langen Inhalten */
+    min-height: 100%;
     background-color: #0f172a;
     color: #f8fafc;
     font-family: 'Inter', system-ui, sans-serif;
     cursor: auto;
     overflow-x: hidden;
-    /* Verhindert das versehentliche Markieren von Text */
     user-select: none;
     -webkit-user-select: none;
     -ms-user-select: none;
   }
+
+  /* --- Reveal Animations --- */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.2, 1, 0.3, 1);
+    will-change: transform, opacity;
+  }
+
+  .reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Verschiedene Reveal-Typen */
+  .reveal-left { transform: translateX(-30px); }
+  .reveal-right { transform: translateX(30px); }
+  .reveal-scale { transform: scale(0.9); }
+  
+  .reveal.revealed.reveal-left,
+  .reveal.revealed.reveal-right { transform: translateX(0); }
+  .reveal.revealed.reveal-scale { transform: scale(1); }
+
+  /* Delay-Klassen für Staggered Effects */
+  .delay-100 { transition-delay: 100ms; }
+  .delay-200 { transition-delay: 200ms; }
+  .delay-300 { transition-delay: 300ms; }
+  .delay-400 { transition-delay: 400ms; }
+  .delay-500 { transition-delay: 500ms; }
+
 
   #preloader {
     position: fixed;

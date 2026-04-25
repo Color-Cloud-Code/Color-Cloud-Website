@@ -153,11 +153,11 @@ const pageTitle = "Einstellungen - Color Cloud";
   </style>
 
   <main>
-    <h1>Bot Einstellungen</h1>
+    <h1 class="reveal">Bot Einstellungen</h1>
 
     <div class="settings-grid">
       <!-- Allgemeine Einstellungen -->
-      <section class="settings-card">
+      <section class="settings-card reveal reveal-scale delay-100">
         <div class="card-title">⚙️ Allgemein</div>
         <div class="input-group">
           <label>Bot Name</label>
@@ -170,7 +170,7 @@ const pageTitle = "Einstellungen - Color Cloud";
       </section>
 
       <!-- Module -->
-      <section class="settings-card">
+      <section class="settings-card reveal reveal-scale delay-200">
         <div class="card-title">🧩 Module</div>
         <div class="toggle-group">
           <span>Level-System</span>
@@ -196,7 +196,7 @@ const pageTitle = "Einstellungen - Color Cloud";
       </section>
 
       <!-- Sicherheit -->
-      <section class="settings-card">
+      <section class="settings-card reveal reveal-scale delay-300">
         <div class="card-title">🛡️ Sicherheit</div>
         <div class="input-group">
           <label>Bot Token (Geheim)</label>
@@ -208,7 +208,7 @@ const pageTitle = "Einstellungen - Color Cloud";
         </div>
       </section>
       <!-- Cursor-Einstellungen -->
-      <section class="settings-card">
+      <section class="settings-card reveal reveal-scale delay-400">
         <div class="card-title">✨ Cursor-Effekte</div>
         <div class="toggle-group">
           <span>Trail aktivieren</span>
@@ -228,7 +228,7 @@ const pageTitle = "Einstellungen - Color Cloud";
       </section>
     </div>
 
-    <button class="save-btn" id="save-settings">Änderungen speichern</button>
+    <button class="save-btn reveal delay-500" id="save-settings">Änderungen speichern</button>
 
     <script is:inline>
       // Einstellungen laden
