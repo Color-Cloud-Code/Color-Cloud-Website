@@ -237,20 +237,6 @@ const pageTitle = "Einstellungen - Color Cloud";
           <input type="range" id="trail-size" min="50" max="200" value="100" style="width: 100%; cursor: pointer;" />
         </div>
       </section>
-      <!-- Fenster / Desktop Modus -->
-      <section class="settings-card reveal reveal-scale delay-500">
-        <div class="card-title">🖥️ Desktop Modus</div>
-        <div class="toggle-group">
-          <span>Fenster verschiebbar machen</span>
-          <label class="switch">
-            <input type="checkbox" id="config-mode">
-            <span class="slider"></span>
-          </label>
-        </div>
-        <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.5rem;">
-          Aktiviert schwebende Fenster. Zurücksetzen mit <kbd style="background: #334155; padding: 2px 5px; border-radius: 4px;">Strg + Shift + +</kbd>
-        </p>
-      </section>
     </div>
 
     <button class="save-btn reveal delay-500 glow-pulse" id="save-settings">Änderungen speichern</button>
@@ -262,14 +248,12 @@ const pageTitle = "Einstellungen - Color Cloud";
         const cursorSize = localStorage.getItem('cursorSize') || '32';
         const trailColor = localStorage.getItem('trailColor') || '#00ffff';
         const trailSize = localStorage.getItem('trailSize') || '100';
-        const configMode = localStorage.getItem('configMode') === 'true';
 
         document.getElementById('trail-toggle').checked = trailEnabled;
         document.getElementById('custom-cursor-toggle').checked = customCursorEnabled;
         document.getElementById('cursor-size').value = cursorSize;
         document.getElementById('trail-color').value = trailColor;
         document.getElementById('trail-size').value = trailSize;
-        document.getElementById('config-mode').checked = configMode;
       };
 
       document.getElementById('save-settings').addEventListener('click', () => {
@@ -278,14 +262,12 @@ const pageTitle = "Einstellungen - Color Cloud";
         const cursorSize = document.getElementById('cursor-size').value;
         const trailColor = document.getElementById('trail-color').value;
         const trailSize = document.getElementById('trail-size').value;
-        const configMode = document.getElementById('config-mode').checked;
 
         localStorage.setItem('trailEnabled', trailEnabled);
         localStorage.setItem('customCursorEnabled', customCursorEnabled);
         localStorage.setItem('cursorSize', cursorSize);
         localStorage.setItem('trailColor', trailColor);
         localStorage.setItem('trailSize', trailSize);
-        localStorage.setItem('configMode', configMode);
 
         alert('Einstellungen gespeichert!');
         window.location.reload();
