@@ -99,10 +99,10 @@ const { title } = Astro.props;
               card.style.zIndex = maxZIndex + index;
 
               let isDragging = false;
-              let startMouseX;
-              let startMouseY;
-              let startXPos = startX;
-              let startYPos = startY;
+              let currentX = startX;
+              let currentY = startY;
+              let initialX;
+              let initialY;
 
               handle.addEventListener('mousedown', dragStart);
               document.addEventListener('mousemove', drag);
@@ -113,19 +113,14 @@ const { title } = Astro.props;
                 maxZIndex++;
                 card.style.zIndex = maxZIndex;
 
+                // Prüfen, ob auf den Griff (aber nicht auf Buttons) geklickt wurde
                 if (e.target.closest('.window-handle') && !e.target.closest('.window-controls')) {
                   isDragging = true;
                   card.classList.add('dragging');
                   
-                  // Aktuelle Mausposition speichern
-                  startMouseX = e.clientX;
-                  startMouseY = e.clientY;
-                  
-                  // Aktuelle Fensterposition (aus dem Transform) speichern
-                  const style = window.getComputedStyle(card);
-                  const matrix = new DOMMatrixReadOnly(style.transform);
-                  startXPos = matrix.m41;
-                  startYPos = matrix.m42;
+                  // Start-Differenz berechnen
+                  initialX = e.clientX - currentX;
+                  initialY = e.clientY - currentY;
 
                   e.stopPropagation();
                   e.preventDefault();
@@ -144,12 +139,12 @@ const { title } = Astro.props;
               function drag(e) {
                 if (isDragging) {
                   hasMoved = true;
-                  // Wie weit wurde die Maus bewegt?
-                  const dx = e.clientX - startMouseX;
-                  const dy = e.clientY - startMouseY;
+                  // Neue Position berechnen
+                  currentX = e.clientX - initialX;
+                  currentY = e.clientY - initialY;
                   
-                  // Neue Position = Startposition + Maus-Differenz
-                  card.style.transform = `translate3d(${startXPos + dx}px, ${startYPos + dy}px, 0)`;
+                  // Fenster verschieben
+                  card.style.transform = `translate3d(${currentX}px, ${currentY}px, 0)`;
                 }
               }
 
