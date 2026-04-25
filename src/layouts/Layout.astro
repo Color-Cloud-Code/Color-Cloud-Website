@@ -183,6 +183,9 @@ const { title } = Astro.props;
           }
 
           function initTiltEffect() {
+            const configMode = localStorage.getItem('configMode') === 'true';
+            if (configMode) return; // Deaktivieren, wenn Fenster-Modus an ist
+
             const cards = document.querySelectorAll('.tilt');
             cards.forEach(card => {
               card.addEventListener('mousemove', (e) => {
