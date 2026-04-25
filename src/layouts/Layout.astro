@@ -1,4 +1,6 @@
 ---
+import { ViewTransitions } from 'astro:transitions';
+
 interface Props {
   title: string;
 }
@@ -14,6 +16,7 @@ const { title } = Astro.props;
     <link rel="icon" href="/logo.ico" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <ViewTransitions />
   </head>
   <body>
     <!-- Ladebildschirm -->
@@ -35,14 +38,46 @@ const { title } = Astro.props;
 
     <script is:inline>
       (function() {
+        let isLoaded = false;
+        let mouseX = 0;
+        let mouseY = 0;
+        let dots = [];
+        let animationFrameId = null;
+
         const init = () => {
           const preloader = document.getElementById('preloader');
           const container = document.getElementById('cursor-trail-container');
           const customCursor = document.getElementById('custom-cursor');
           
-          window.scrollTo(0, 0);
+          // Animationen initialisieren
+          initScrollAnimations();
+          initTiltEffect();
+
+          if (preloader && !isLoaded) {
+            window.scrollTo(0, 0);
+            document.documentElement.style.overflow = 'hidden';
+            document.body.style.overflow = 'hidden';
+
+            setTimeout(() => {
+              preloader.style.opacity = '0';
+              setTimeout(() => {
+                preloader.style.display = 'none';
+                document.documentElement.classList.remove('loading');
+                document.documentElement.style.overflow = 'auto';
+                document.body.style.overflow = 'auto';
+                isLoaded = true;
+                if (container) container.style.opacity = '1';
+              }, 500);
+            }, 1000); 
+          } else if (preloader) {
+            preloader.style.display = 'none';
+            document.documentElement.classList.remove('loading');
+            document.documentElement.style.overflow = 'auto';
+            document.body.style.overflow = 'auto';
+            if (container) container.style.opacity = '1';
+          }
           
-          // Einstellungen laden
+          // Cursor-Einstellungen laden
           const customCursorEnabled = localStorage.getItem('customCursorEnabled') === 'true';
           const cursorSize = parseInt(localStorage.getItem('cursorSize') || '32');
           
@@ -51,126 +86,78 @@ const { title } = Astro.props;
             customCursor.style.width = cursorSize + 'px';
             customCursor.style.height = cursorSize + 'px';
             document.body.style.cursor = 'none';
-            // Alle Links und Buttons ebenfalls cursor: none geben
             const style = document.createElement('style');
             style.innerHTML = `* { cursor: none !important; }`;
             document.head.appendChild(style);
-          }
-          document.documentElement.style.overflow = 'hidden';
-          document.body.style.overflow = 'hidden';
-
-          if (preloader) {
-            setTimeout(() => {
-              preloader.style.opacity = '0';
-              setTimeout(() => {
-                preloader.style.display = 'none';
-                document.documentElement.classList.remove('loading');
-                document.documentElement.style.overflow = 'auto';
-                document.body.style.overflow = 'auto';
-                
-                isLoaded = true;
-                if (container) container.style.opacity = '1';
-
-                // Initialisiere Animationen
-                initScrollAnimations();
-                initTiltEffect();
-              }, 500);
-            }, 1000); 
+          } else {
+            document.body.style.cursor = 'auto';
           }
 
           function initScrollAnimations() {
-            const observerOptions = {
-              threshold: 0.1,
-              rootMargin: "0px 0px -50px 0px"
-            };
-
+            const observerOptions = { threshold: 0.1, rootMargin: "0px 0px -50px 0px" };
             const observer = new IntersectionObserver((entries) => {
               entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                  entry.target.classList.add('revealed');
-                }
+                if (entry.isIntersecting) entry.target.classList.add('revealed');
               });
             }, observerOptions);
-
             document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
           }
 
           function initTiltEffect() {
-            const configMode = localStorage.getItem('configMode') === 'true';
-            if (configMode) return; // Deaktivieren, wenn Fenster-Modus an ist
-
             const cards = document.querySelectorAll('.tilt');
             cards.forEach(card => {
               card.addEventListener('mousemove', (e) => {
                 const rect = card.getBoundingClientRect();
                 const x = e.clientX - rect.left;
                 const y = e.clientY - rect.top;
-                
                 const centerX = rect.width / 2;
                 const centerY = rect.height / 2;
-                
                 const rotateX = (y - centerY) / 10;
                 const rotateY = (centerX - x) / 10;
-                
                 card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.05)`;
               });
-              
               card.addEventListener('mouseleave', () => {
                 card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)`;
               });
             });
           }
 
-          if (!container) return;
-          let isLoaded = false;
+          // Trail initialisieren
+          if (container) {
+            container.innerHTML = '';
+            dots = [];
+            const enabled = localStorage.getItem('trailEnabled') !== 'false';
+            const color = localStorage.getItem('trailColor') || '#00ffff';
+            const sizeMultiplier = parseInt(localStorage.getItem('trailSize') || '100') / 100;
 
-          const enabled = localStorage.getItem('trailEnabled') !== 'false';
-          const color = localStorage.getItem('trailColor') || '#00ffff';
-          const sizeMultiplier = parseInt(localStorage.getItem('trailSize') || '100') / 100;
-
-          if (!enabled) {
-            container.style.display = 'none';
-          } else {
-            const hexToRgb = (hex) => {
-              const r = parseInt(hex.slice(1, 3), 16);
-              const g = parseInt(hex.slice(3, 5), 16);
-              const b = parseInt(hex.slice(5, 7), 16);
-              return `${r}, ${g}, ${b}`;
-            };
-            document.documentElement.style.setProperty('--trail-color', `rgba(${hexToRgb(color)}, 0.4)`);
+            if (!enabled) {
+              container.style.display = 'none';
+            } else {
+              container.style.display = 'block';
+              const hexToRgb = (hex) => {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                return `${r}, ${g}, ${b}`;
+              };
+              document.documentElement.style.setProperty('--trail-color', `rgba(${hexToRgb(color)}, 0.4)`);
+              
+              const numDots = 12;
+              for (let i = 0; i < numDots; i++) {
+                const dotEl = document.createElement('div');
+                dotEl.className = 'trail-dot';
+                const size = (100 - (i * 7)) * sizeMultiplier;
+                dotEl.style.width = size + 'px';
+                dotEl.style.height = (size * 1.3) + 'px';
+                dotEl.style.opacity = (1 - (i / numDots)).toString();
+                container.appendChild(dotEl);
+                dots.push({ el: dotEl, x: mouseX, y: mouseY, angle: 0 });
+              }
+            }
           }
 
-          const dots = [];
-          const numDots = 12;
-          let mouseX = 0;
-          let mouseY = 0;
-
-          for (let i = 0; i < numDots; i++) {
-            const dotEl = document.createElement('div');
-            dotEl.className = 'trail-dot';
-            const size = (100 - (i * 7)) * sizeMultiplier;
-            dotEl.style.width = size + 'px';
-            dotEl.style.height = (size * 1.3) + 'px';
-            dotEl.style.opacity = (1 - (i / numDots)).toString();
-            container.appendChild(dotEl);
-            dots.push({ el: dotEl, x: 0, y: 0, angle: 0 });
-          }
-
-          window.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            
-            // Eigener Cursor folgt der Maus
-            if (customCursor && customCursorEnabled) {
-              customCursor.style.left = mouseX + 'px';
-              customCursor.style.top = mouseY + 'px';
-            }
-
-            if (dots[0].x === 0 && dots[0].y === 0) {
-              dots.forEach(d => { d.x = mouseX; d.y = mouseY; });
-            }
-          });
-
+          if (animationFrameId) cancelAnimationFrame(animationFrameId);
+          
           function animate() {
             let targetX = mouseX;
             let targetY = mouseY;
@@ -191,21 +178,27 @@ const { title } = Astro.props;
               dot.el.style.left = dot.x + 'px';
               dot.el.style.top = dot.y + 'px';
               dot.el.style.transform = `translate(-50%, -50%) rotate(${dot.angle}deg)`;
-              const baseOpacity = (1 - (index / numDots));
+              const baseOpacity = (1 - (index / 12));
               dot.el.style.opacity = isUnderVideo ? '0' : baseOpacity.toString();
               targetX = dot.x;
               targetY = dot.y;
             });
-            requestAnimationFrame(animate);
+            animationFrameId = requestAnimationFrame(animate);
           }
           animate();
-
-          document.addEventListener('mouseleave', () => { if (isLoaded) container.style.opacity = '0'; });
-          document.addEventListener('mouseenter', () => { if (isLoaded) container.style.opacity = '1'; });
         };
 
-        if (document.readyState === 'complete') init();
-        else window.addEventListener('load', init);
+        window.addEventListener('mousemove', (e) => {
+          mouseX = e.clientX;
+          mouseY = e.clientY;
+          const customCursor = document.getElementById('custom-cursor');
+          if (customCursor && localStorage.getItem('customCursorEnabled') === 'true') {
+            customCursor.style.left = mouseX + 'px';
+            customCursor.style.top = mouseY + 'px';
+          }
+        });
+
+        document.addEventListener('astro:page-load', init);
       })();
     </script>
   </body>
@@ -393,6 +386,32 @@ const { title } = Astro.props;
   }
 
 
+
+  /* Staggered Entrance Delays */
+  .delay-100 { transition-delay: 100ms; }
+  .delay-200 { transition-delay: 200ms; }
+  .delay-300 { transition-delay: 300ms; }
+  .delay-400 { transition-delay: 400ms; }
+  .delay-500 { transition-delay: 500ms; }
+
+  /* Text Shimmer Animation */
+  .text-shimmer {
+    background: linear-gradient(
+      to right,
+      #38bdf8 20%,
+      #8b5cf6 40%,
+      #8b5cf6 60%,
+      #38bdf8 80%
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 4s linear infinite;
+  }
+
+  @keyframes shimmer {
+    to { background-position: 200% center; }
+  }
 
   #preloader {
     position: fixed;

@@ -10,25 +10,131 @@ const pageTitle = "Color Cloud";
 
   <style>
     main {
-      padding: 4rem 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 6rem 2rem;
+    }
+
+    .hero {
       text-align: center;
+      margin-bottom: 6rem;
     }
 
     h1 {
-      font-size: 3rem;
-      background: linear-gradient(to right, #38bdf8, #8b5cf6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: clamp(3rem, 10vw, 5rem);
+      font-weight: 900;
+      letter-spacing: -2px;
+      margin-bottom: 1rem;
     }
     
-    p {
-      font-size: 1.25rem;
+    .hero p {
+      font-size: 1.5rem;
       color: #94a3b8;
+      max-width: 600px;
+      margin: 0 auto 2rem;
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #38bdf8, #8b5cf6);
+      color: white;
+      box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-5px) scale(1.05);
+      box-shadow: 0 15px 30px rgba(56, 189, 248, 0.5);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: white;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-5px);
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .feature-card {
+      background: rgba(30, 41, 59, 0.5);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 24px;
+      padding: 3rem 2rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(56, 189, 248, 0.5);
+      transform: translateY(-10px);
+    }
+
+    .feature-icon {
+      font-size: 3rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .feature-card h3 {
+      font-size: 1.5rem;
+      color: #38bdf8;
+      margin-bottom: 1rem;
+    }
+
+    .feature-card p {
+      color: #94a3b8;
+      line-height: 1.6;
     }
   </style>
 
-  <main class="reveal floating">
-    <h1>Willkommen bei Color Cloud!</h1>
-    <p class="reveal delay-200">Hier kannst du alle Funktionen deines Dashboards verwalten.</p>
+  <main>
+    <section class="hero reveal">
+      <h1 class="text-shimmer">Color Cloud</h1>
+      <p>Die ultimative Lösung für dein Discord-Erlebnis.</p>
+      <div class="hero-btns">
+        <a href="/settings" class="btn btn-primary glow-pulse">Jetzt starten</a>
+        <a href="/content" class="btn btn-secondary">Inhalte entdecken</a>
+      </div>
+    </section>
+
+    <div class="features-grid">
+      <div class="feature-card reveal reveal-left delay-100 tilt shine-effect">
+        <div class="feature-icon">🛡️</div>
+        <h3>Sicherheit</h3>
+        <p>Höchster Schutz für deinen Server durch modernste Verschlüsselung.</p>
+      </div>
+      <div class="feature-card reveal reveal-scale delay-200 tilt shine-effect">
+        <div class="feature-icon">⚡</div>
+        <h3>Performance</h3>
+        <p>Blitzschnelle Reaktionszeiten und 99.9% Uptime für deine Community.</p>
+      </div>
+      <div class="feature-card reveal reveal-right delay-300 tilt shine-effect">
+        <div class="feature-icon">🎨</div>
+        <h3>Customizing</h3>
+        <p>Pass den Bot perfekt an deinen Server an – ohne Programmierkenntnisse.</p>
+      </div>
+    </div>
   </main>
 </Layout>
