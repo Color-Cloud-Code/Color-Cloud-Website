@@ -111,8 +111,16 @@ const { title } = Astro.props;
               card.addEventListener('dragstart', (e) => e.preventDefault());
 
               function dragStart(e) {
+                // Fokus setzen
                 maxZIndex++;
                 card.style.zIndex = maxZIndex;
+
+                // Aktuelle Position aus der Matrix auslesen, um Sprünge zu verhindern
+                const style = window.getComputedStyle(card);
+                const matrix = new DOMMatrixReadOnly(style.transform);
+                xOffset = matrix.m41;
+                yOffset = matrix.m42;
+
                 initialX = e.clientX - xOffset;
                 initialY = e.clientY - yOffset;
                 
