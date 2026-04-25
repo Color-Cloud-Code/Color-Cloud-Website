@@ -1,0 +1,34 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+
+const pageTitle = "Color Cloud";
+---
+
+<Layout title={pageTitle}>
+  <Navbar />
+
+  <style>
+    main {
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 3rem;
+      background: linear-gradient(to right, #38bdf8, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    p {
+      font-size: 1.25rem;
+      color: #94a3b8;
+    }
+  </style>
+
+  <main>
+    <h1>Willkommen bei Color Cloud!</h1>
+    <p>Hier kannst du alle Funktionen deines Dashboards verwalten.</p>
+  </main>
+</Layout>

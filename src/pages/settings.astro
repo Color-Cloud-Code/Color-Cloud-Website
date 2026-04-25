@@ -1,0 +1,260 @@
+---
+import Layout from "../layouts/Layout.astro";
+import Navbar from "../components/Navbar.astro";
+
+const pageTitle = "Einstellungen - Color Cloud";
+---
+
+<Layout title={pageTitle}>
+  <Navbar />
+
+  <style>
+    main {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 4rem 2rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(to right, #38bdf8, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 2rem;
+    }
+
+    .settings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+    }
+
+    .settings-card {
+      background: rgba(30, 41, 59, 0.5);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+
+    .settings-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(56, 189, 248, 0.4);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .input-group {
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      color: #94a3b8;
+      font-size: 0.875rem;
+      margin-bottom: 0.5rem;
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 0.75rem;
+      color: white;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input:focus {
+      border-color: #38bdf8;
+    }
+
+    .toggle-group {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem 0;
+    }
+
+    /* Custom Toggle Switch */
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #334155;
+      transition: .4s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: #38bdf8;
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+
+    .save-btn {
+      margin-top: 2rem;
+      background: linear-gradient(135deg, #38bdf8, #8b5cf6);
+      color: white;
+      border: none;
+      padding: 1rem 2.5rem;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 20px rgba(56, 189, 248, 0.2);
+    }
+
+    .save-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 15px 30px rgba(56, 189, 248, 0.4);
+    }
+  </style>
+
+  <main>
+    <h1>Bot Einstellungen</h1>
+
+    <div class="settings-grid">
+      <!-- Allgemeine Einstellungen -->
+      <section class="settings-card">
+        <div class="card-title">⚙️ Allgemein</div>
+        <div class="input-group">
+          <label>Bot Name</label>
+          <input type="text" value="Color Cloud Bot" />
+        </div>
+        <div class="input-group">
+          <label>Prefix</label>
+          <input type="text" value="!" />
+        </div>
+      </section>
+
+      <!-- Module -->
+      <section class="settings-card">
+        <div class="card-title">🧩 Module</div>
+        <div class="toggle-group">
+          <span>Level-System</span>
+          <label class="switch">
+            <input type="checkbox" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-group">
+          <span>Ticket-System</span>
+          <label class="switch">
+            <input type="checkbox">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="toggle-group">
+          <span>Economy-System</span>
+          <label class="switch">
+            <input type="checkbox" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <!-- Sicherheit -->
+      <section class="settings-card">
+        <div class="card-title">🛡️ Sicherheit</div>
+        <div class="input-group">
+          <label>Bot Token (Geheim)</label>
+          <input type="password" value="MTE4OTI3MzQ5..." />
+        </div>
+        <div class="input-group">
+          <label>Admin-Rollen ID</label>
+          <input type="text" placeholder="123456789..." />
+        </div>
+      </section>
+      <!-- Cursor-Einstellungen -->
+      <section class="settings-card">
+        <div class="card-title">✨ Cursor-Effekte</div>
+        <div class="toggle-group">
+          <span>Trail aktivieren</span>
+          <label class="switch">
+            <input type="checkbox" id="trail-toggle" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div class="input-group">
+          <label>Trail Farbe</label>
+          <input type="color" id="trail-color" value="#00ffff" style="height: 40px; padding: 2px; cursor: pointer;" />
+        </div>
+        <div class="input-group">
+          <label>Größe der Spur</label>
+          <input type="range" id="trail-size" min="50" max="200" value="100" style="width: 100%; cursor: pointer;" />
+        </div>
+      </section>
+    </div>
+
+    <button class="save-btn" id="save-settings">Änderungen speichern</button>
+
+    <script is:inline>
+      // Einstellungen laden
+      const loadSettings = () => {
+        const enabled = localStorage.getItem('trailEnabled') !== 'false';
+        const color = localStorage.getItem('trailColor') || '#00ffff';
+        const size = localStorage.getItem('trailSize') || '100';
+
+        document.getElementById('trail-toggle').checked = enabled;
+        document.getElementById('trail-color').value = color;
+        document.getElementById('trail-size').value = size;
+      };
+
+      // Einstellungen speichern
+      document.getElementById('save-settings').addEventListener('click', () => {
+        const enabled = document.getElementById('trail-toggle').checked;
+        const color = document.getElementById('trail-color').value;
+        const size = document.getElementById('trail-size').value;
+
+        localStorage.setItem('trailEnabled', enabled);
+        localStorage.setItem('trailColor', color);
+        localStorage.setItem('trailSize', size);
+
+        alert('Einstellungen gespeichert! Der Effekt wird sofort aktualisiert.');
+        window.location.reload();
+      });
+
+      loadSettings();
+    </script>
