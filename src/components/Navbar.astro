@@ -1,5 +1,6 @@
 ---
-
+const pathname = new URL(Astro.request.url).pathname;
+const currentPath = pathname.slice(1); // Entfernt den führenden Slash
 ---
 
 <nav class="navbar">
@@ -11,10 +12,10 @@
   </a>
   <div class="nav-container">
     <ul class="nav-links">
-      <li><a href="/" class="active">Startseite</a></li>
-      <li><a href="/settings">Einstellungen</a></li>
-      <li><a href="/content">Content</a></li>
-      <li><a href="/about">Über uns</a></li>
+      <li><a href="/" class={pathname === "/" ? "active" : ""}>Startseite</a></li>
+      <li><a href="/settings" class={currentPath === "settings" ? "active" : ""}>Einstellungen</a></li>
+      <li><a href="/content" class={currentPath.startsWith("content") ? "active" : ""}>Content</a></li>
+      <li><a href="/about" class={currentPath === "about" ? "active" : ""}>Über uns</a></li>
     </ul>
   </div>
 
@@ -31,33 +32,34 @@
     const navLinks = document.querySelector('.nav-links');
     const body = document.body;
 
-    if (!hamburger) return;
+    if (!hamburger || !navLinks) return;
 
-    // Vorherige Event-Listener entfernen, falls vorhanden (um Duplikate zu vermeiden)
-    const newHamburger = hamburger.cloneNode(true);
-    hamburger.parentNode.replaceChild(newHamburger, hamburger);
+    // Funktion zum Schließen des Menüs
+    const closeMenu = () => {
+      hamburger.classList.remove('active');
+      navLinks.classList.remove('mobile-active');
+      body.style.overflow = '';
+    };
 
-    newHamburger.addEventListener('click', () => {
-      newHamburger.classList.toggle('active');
-      navLinks?.classList.toggle('mobile-active');
+    // Click Event für Hamburger
+    hamburger.onclick = () => {
+      hamburger.classList.toggle('active');
+      navLinks.classList.toggle('mobile-active');
       
-      if (navLinks?.classList.contains('mobile-active')) {
+      if (navLinks.classList.contains('mobile-active')) {
         body.style.overflow = 'hidden';
       } else {
         body.style.overflow = '';
       }
-    });
+    };
 
+    // Menü schließen wenn ein Link geklickt wird
     document.querySelectorAll('.nav-links a').forEach(link => {
-      link.addEventListener('click', () => {
-        newHamburger.classList.remove('active');
-        navLinks?.classList.remove('mobile-active');
-        body.style.overflow = '';
-      });
+      link.onclick = closeMenu;
     });
   };
 
-  // Initialer Start und bei jedem Seitenwechsel
+  // Start bei erstem Laden und bei jedem Seitenwechsel
   document.addEventListener('astro:page-load', initMobileMenu);
 </script>
 
