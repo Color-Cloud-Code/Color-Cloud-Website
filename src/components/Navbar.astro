@@ -53,9 +53,17 @@ const currentPath = pathname.slice(1); // Entfernt den führenden Slash
       }
     });
 
-    // Menü schließen wenn ein Link geklickt wird
+    // Menü schließen wenn ein Link geklickt wird und Easter Egg prüfen
     document.querySelectorAll('.nav-links a').forEach(link => {
-      link.addEventListener('click', closeMenu);
+      link.addEventListener('click', (e) => {
+        // Easter Egg: Strg + Klick auf "Über uns"
+        if (link.getAttribute('href') === '/about' && e.ctrlKey) {
+          e.preventDefault();
+          window.location.href = '/projekte';
+          return;
+        }
+        closeMenu();
+      });
     });
   };
 
