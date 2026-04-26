@@ -1,0 +1,31 @@
+# Color Cloud Deployment Befehle
+
+Hier sind die wichtigsten Befehle, um deine Webseite zu verwalten und zu veröffentlichen.
+
+## 1. Lokale Entwicklung (Vorschau auf deinem PC)
+Um die Seite lokal zu testen, bevor du sie hochlädst:
+$ npm run dev
+
+## 2. Bauen der Webseite (Build)
+Erzeugt den fertigen Code im Ordner `/dist`:
+$ npm run build
+
+## 3. Veröffentlichen via Git (Empfohlen!)
+Deine Cloudflare Pages Seite ist mit GitHub verbunden. Jedes Mal, wenn du "pushst", wird die Seite automatisch aktualisiert.
+
+# Alles speichern und hochladen (Production):
+$ git add .
+$ git commit -m "Deine Beschreibung der Änderung"
+$ git push origin main
+
+## 4. Veröffentlichen via Wrangler (Direkt-Upload)
+Falls du Wrangler installiert hast, kannst du auch ohne Git direkt zu Cloudflare hochladen:
+
+# Für die Vorschau (Preview):
+$ npx wrangler pages deploy ./dist
+
+# Für die Live-Seite (Production):
+$ npx wrangler pages deploy ./dist --branch main
+
+---
+Tipp: Nutze am besten immer die Git-Befehle (Schritt 3), da so dein Code sicher auf GitHub gespeichert wird und Cloudflare die Arbeit für dich übernimmt!
