@@ -5,16 +5,52 @@ import Navbar from "../components/Navbar.astro";
 const pageTitle = "Tech Stack - Color Cloud Bot";
 
 const techs = [
-  { name: "Database", icon: "🗄️", desc: "Sichere Datenspeicherung für Level und User-Profile." },
-  { name: "TypeScript", icon: "📘", desc: "Typensicheres JavaScript für stabilen Bot-Code." },
+  {
+    name: "Database",
+    icon: "🗄️",
+    desc: "Sichere Datenspeicherung für Level und User-Profile.",
+  },
+  {
+    name: "TypeScript",
+    icon: "📘",
+    desc: "Typensicheres JavaScript für stabilen Bot-Code.",
+    status: "dev",
+  },
   { name: "Python", icon: "🐍", desc: "KI-Module und komplexe Algorithmen." },
-  { name: "JavaScript", icon: "💛", desc: "Die Basis für unser Web-Dashboard." },
-  { name: "Java", icon: "☕", desc: "Backend-Strukturen und High-Performance Module." },
-  { name: "C#", icon: "💜", desc: "Zusätzliche Tools und Systemintegrationen." },
-  { name: "C++", icon: "🚀", desc: "Maximale Performance (In Entwicklung).", status: "dev" },
+  {
+    name: "JavaScript",
+    icon: "💛",
+    desc: "Die Basis für unser Web-Dashboard.",
+  },
+  {
+    name: "Java",
+    icon: "☕",
+    desc: "Backend-Strukturen und High-Performance Module.",
+    status: "dev",
+  },
+  {
+    name: "C#",
+    icon: "💜",
+    desc: "Zusätzliche Tools und Systemintegrationen.",
+    status: "dev",
+  },
+  {
+    name: "C++",
+    icon: "🚀",
+    desc: "Maximale Performance (In Entwicklung).",
+    status: "dev",
+  },
   { name: "JSON", icon: "📄", desc: "Strukturierte Konfigurationsdateien." },
-  { name: "Golang", icon: "🐹", desc: "Schnelle Microservices und Schnittstellen." },
-  { name: ".env", icon: "🔑", desc: "Sichere Verwaltung von API-Keys und Tokens." }
+  {
+    name: "Golang",
+    icon: "🐹",
+    desc: "Schnelle Microservices und Schnittstellen.",
+  },
+  {
+    name: ".env",
+    icon: "🔑",
+    desc: "Sichere Verwaltung von API-Keys und Tokens.",
+  },
 ];
 ---
 
@@ -96,24 +132,32 @@ const techs = [
   </style>
 
   <main>
-    <a href="/projekte" class="back-btn reveal reveal-left">← Zurück zu Projekten</a>
-    
+    <a href="/projekte" class="back-btn reveal reveal-left"
+      >← Zurück zu Projekten</a
+    >
+
     <div class="header reveal">
       <h1 class="text-shimmer">Unser Tech Stack</h1>
       <p>Die Technologien, die den Color Cloud Bot antreiben.</p>
     </div>
 
     <div class="tech-grid">
-      {techs.map((tech, index) => (
-        <div class={`tech-card reveal reveal-scale tilt delay-${(index % 5 + 1) * 100}`}>
-          <div class="tech-icon">{tech.icon}</div>
-          <div class="tech-name">
-            {tech.name}
-            {tech.status === "dev" && <span class="status-badge">In Arbeit</span>}
+      {
+        techs.map((tech, index) => (
+          <div
+            class={`tech-card reveal reveal-scale tilt delay-${((index % 5) + 1) * 100}`}
+          >
+            <div class="tech-icon">{tech.icon}</div>
+            <div class="tech-name">
+              {tech.name}
+              {tech.status === "dev" && (
+                <span class="status-badge">In Arbeit</span>
+              )}
+            </div>
+            <p class="tech-desc">{tech.desc}</p>
           </div>
-          <p class="tech-desc">{tech.desc}</p>
-        </div>
-      ))}
+        ))
+      }
     </div>
   </main>
 </Layout>
