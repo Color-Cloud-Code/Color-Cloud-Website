@@ -1,35 +1,28 @@
-# Color Cloud: Einfache Anleitung zum Veröffentlichen
+# Color Cloud: Anleitung zum Veröffentlichen
 
-Deine Webseite ist direkt mit Cloudflare Pages verbunden. Du musst nur Git-Befehle nutzen.
+WICHTIG: Führe diese Befehle immer im Hauptordner aus:
+cd "d:\D Bot\dashboard"
 
 ## 1. Live-Seite aktualisieren (Production)
-Alles, was du hierhin schickst, ist sofort für jeden unter deiner Haupt-URL sichtbar.
+Alles, was du hierhin schickst, ist sofort live.
 
-$ git add .
-$ git commit -m "Webseite aktualisiert"
-$ git push origin main
+& "C:\Program Files\Git\bin\git.exe" add .
+& "C:\Program Files\Git\bin\git.exe" commit -m "Webseite aktualisiert"
+& "C:\Program Files\Git\bin\git.exe" push origin main
 
 ---
 
 ## 2. Vorschau-Seite erstellen (Preview)
-Wenn du etwas testen willst, ohne die Live-Seite zu ändern, schickst du es an einen "Test-Zweig" (Branch). Cloudflare gibt dir dann automatisch einen eigenen Link nur für diese Vorschau.
+Zum Testen von Funktionen, ohne die Live-Seite zu ändern.
 
-# Einmalig einen Test-Zweig erstellen und hochladen:
-$ git checkout -b vorschau
-$ git add .
-$ git commit -m "Test der neuen Funktionen"
-$ git push origin vorschau
+# Einmalig den Test-Zweig (vorschau) erstellen:
+& "C:\Program Files\Git\bin\git.exe" checkout -b vorschau
+& "C:\Program Files\Git\bin\git.exe" push origin vorschau
 
-# Wenn du später wieder etwas in die Vorschau schicken willst:
-$ git add .
-$ git commit -m "Weitere Tests"
-$ git push origin vorschau
+# Wenn du später die Vorschau aktualisieren willst:
+& "C:\Program Files\Git\bin\git.exe" add .
+& "C:\Program Files\Git\bin\git.exe" commit -m "Test-Update"
+& "C:\Program Files\Git\bin\git.exe" push origin vorschau
 
-# So kommst du zurück zur Haupt-Seite:
-$ git checkout main
-
----
-
-## Zusammenfassung
-- Schickst du an 'main' -> Live-Seite (Live für alle)
-- Schickst du an 'vorschau' -> Test-Seite (Nur über speziellen Link von Cloudflare)
+# So kehrst du zur Haupt-Seite (Live) zurück:
+& "C:\Program Files\Git\bin\git.exe" checkout main
