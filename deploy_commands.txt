@@ -1,31 +1,35 @@
-# Color Cloud Deployment Befehle
+# Color Cloud: Einfache Anleitung zum Veröffentlichen
 
-Hier sind die wichtigsten Befehle, um deine Webseite zu verwalten und zu veröffentlichen.
+Deine Webseite ist direkt mit Cloudflare Pages verbunden. Du musst nur Git-Befehle nutzen.
 
-## 1. Lokale Entwicklung (Vorschau auf deinem PC)
-Um die Seite lokal zu testen, bevor du sie hochlädst:
-$ npm run dev
+## 1. Live-Seite aktualisieren (Production)
+Alles, was du hierhin schickst, ist sofort für jeden unter deiner Haupt-URL sichtbar.
 
-## 2. Bauen der Webseite (Build)
-Erzeugt den fertigen Code im Ordner `/dist`:
-$ npm run build
-
-## 3. Veröffentlichen via Git (Empfohlen!)
-Deine Cloudflare Pages Seite ist mit GitHub verbunden. Jedes Mal, wenn du "pushst", wird die Seite automatisch aktualisiert.
-
-# Alles speichern und hochladen (Production):
 $ git add .
-$ git commit -m "Deine Beschreibung der Änderung"
+$ git commit -m "Webseite aktualisiert"
 $ git push origin main
 
-## 4. Veröffentlichen via Wrangler (Direkt-Upload)
-Falls du Wrangler installiert hast, kannst du auch ohne Git direkt zu Cloudflare hochladen:
+---
 
-# Für die Vorschau (Preview):
-$ npx wrangler pages deploy ./dist
+## 2. Vorschau-Seite erstellen (Preview)
+Wenn du etwas testen willst, ohne die Live-Seite zu ändern, schickst du es an einen "Test-Zweig" (Branch). Cloudflare gibt dir dann automatisch einen eigenen Link nur für diese Vorschau.
 
-# Für die Live-Seite (Production):
-$ npx wrangler pages deploy ./dist --branch main
+# Einmalig einen Test-Zweig erstellen und hochladen:
+$ git checkout -b vorschau
+$ git add .
+$ git commit -m "Test der neuen Funktionen"
+$ git push origin vorschau
+
+# Wenn du später wieder etwas in die Vorschau schicken willst:
+$ git add .
+$ git commit -m "Weitere Tests"
+$ git push origin vorschau
+
+# So kommst du zurück zur Haupt-Seite:
+$ git checkout main
 
 ---
-Tipp: Nutze am besten immer die Git-Befehle (Schritt 3), da so dein Code sicher auf GitHub gespeichert wird und Cloudflare die Arbeit für dich übernimmt!
+
+## Zusammenfassung
+- Schickst du an 'main' -> Live-Seite (Live für alle)
+- Schickst du an 'vorschau' -> Test-Seite (Nur über speziellen Link von Cloudflare)
