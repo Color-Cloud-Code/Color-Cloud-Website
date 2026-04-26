@@ -42,7 +42,7 @@ const currentPath = pathname.slice(1); // Entfernt den führenden Slash
     };
 
     // Click Event für Hamburger
-    hamburger.onclick = () => {
+    hamburger.addEventListener('click', () => {
       hamburger.classList.toggle('active');
       navLinks.classList.toggle('mobile-active');
       
@@ -51,11 +51,11 @@ const currentPath = pathname.slice(1); // Entfernt den führenden Slash
       } else {
         body.style.overflow = '';
       }
-    };
+    });
 
     // Menü schließen wenn ein Link geklickt wird
     document.querySelectorAll('.nav-links a').forEach(link => {
-      link.onclick = closeMenu;
+      link.addEventListener('click', closeMenu);
     });
   };
 
