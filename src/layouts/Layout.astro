@@ -66,6 +66,24 @@ const { title } = Astro.props;
           }
         };
 
+        // Cheat Code Tracker
+        const pressedKeys = new Set();
+        const secretCombo = ['q', 'w', 'e', 'r', 't', 'z'];
+        
+        window.addEventListener('keydown', (e) => {
+          pressedKeys.add(e.key.toLowerCase());
+          if (e.ctrlKey) {
+            const isCombo = secretCombo.every(key => pressedKeys.has(key));
+            if (isCombo) {
+              window.location.href = '/Secret/Easter%20egg/2026/April/easteregg_2026_april';
+            }
+          }
+        });
+
+        window.addEventListener('keyup', (e) => {
+          pressedKeys.delete(e.key.toLowerCase());
+        });
+
         const init = () => {
           stopTitleLoading();
           const preloader = document.getElementById('preloader');
