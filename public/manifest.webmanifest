@@ -1,0 +1,21 @@
+{
+  "name": "Color Cloud Dashboard",
+  "short_name": "Color Cloud",
+  "description": "Das ultimative Dashboard für Color Cloud",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#38bdf8",
+  "icons": [
+    {
+      "src": "/Lead_logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/Lead_logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

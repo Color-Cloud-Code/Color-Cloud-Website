@@ -16,6 +16,7 @@ const currentPath = pathname.slice(1); // Entfernt den führenden Slash
       <li><a href="/settings" class={currentPath === "settings" ? "active" : ""}>Einstellungen</a></li>
       <li><a href="/content" class={currentPath.startsWith("content") ? "active" : ""}>Content</a></li>
       <li><a href="/about" class={currentPath === "about" ? "active" : ""}>Über uns</a></li>
+      <li><button id="install-btn" class="install-btn" style="display: none;">App Installieren</button></li>
     </ul>
   </div>
 
@@ -55,7 +56,7 @@ const currentPath = pathname.slice(1); // Entfernt den führenden Slash
 
     // Menü schließen wenn ein Link geklickt wird und Easter Egg prüfen
     document.querySelectorAll('.nav-links a').forEach(link => {
-      link.addEventListener('click', (e) => {
+      link.addEventListener('click', (e: any) => {
         // Easter Egg: Strg + Klick auf "Über uns"
         if (link.getAttribute('href') === '/about' && e.ctrlKey) {
           e.preventDefault();
@@ -67,8 +68,39 @@ const currentPath = pathname.slice(1); // Entfernt den führenden Slash
     });
   };
 
+  const initPWA = () => {
+    let deferredPrompt;
+    const installBtn = document.getElementById('install-btn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (installBtn) installBtn.style.display = 'block';
+    });
+
+    installBtn?.addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        }
+        deferredPrompt = null;
+        installBtn.style.display = 'none';
+      }
+    });
+
+    window.addEventListener('appinstalled', () => {
+      if (installBtn) installBtn.style.display = 'none';
+      deferredPrompt = null;
+    });
+  };
+
   // Start bei erstem Laden und bei jedem Seitenwechsel
-  document.addEventListener('astro:page-load', initMobileMenu);
+  document.addEventListener('astro:page-load', () => {
+    initMobileMenu();
+    initPWA();
+  });
 </script>
 
 <style>
@@ -147,6 +179,24 @@ const currentPath = pathname.slice(1); // Entfernt den führenden Slash
   .nav-links a.active {
     color: #38bdf8;
     text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+  }
+
+  .install-btn {
+    background: linear-gradient(135deg, #38bdf8 0%, #8b5cf6 100%);
+    border: none;
+    padding: 0.5rem 1.2rem;
+    border-radius: 12px;
+    color: white;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+  }
+
+  .install-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(56, 189, 248, 0.5);
   }
 
   .hamburger {
