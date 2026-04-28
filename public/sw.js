@@ -2,7 +2,8 @@ const CACHE_NAME = 'color-cloud-v1';
 const ASSETS = [
   '/',
   '/manifest.webmanifest',
-  '/logo.ico'
+  '/logo.ico',
+  '/Lead_logo.png'
 ];
 
 self.addEventListener('install', (event) => {
