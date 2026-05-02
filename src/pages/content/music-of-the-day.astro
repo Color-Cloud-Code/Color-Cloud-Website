@@ -1,8 +1,60 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Navbar from "../../components/Navbar.astro";
+import fs from 'node:fs';
+import path from 'node:path';
 
-const pageTitle = "Music of the Day - Color Cloud";
+const pageTitle = "Top Music of the Day - Color Cloud";
+
+// Funktion zum sicheren Auslesen des Musik-Links (ID oder ganzer Iframe)
+function getMusicSrc(platz) {
+  try {
+    const filePath = path.join(process.cwd(), 'src', 'pages', 'content', 'Music-Of-the-Day', platz, 'music.txt');
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf-8').trim();
+      
+      // 1. Suche nach dem src-Attribut, falls es ein Iframe-Code ist (Spotify, YouTube, etc.)
+      const iframeMatch = content.match(/src=["']([^"']+)["']/);
+      if (iframeMatch) return iframeMatch[1];
+      
+      // 2. Suche nach einer YouTube ID
+      const idMatch = content.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
+      if (idMatch) return `https://www.youtube.com/embed/${idMatch[1]}`;
+      
+      // 3. Falls es nur die ID ist (Fallback auf YouTube)
+      if (content.length === 11) return `https://www.youtube.com/embed/${content}`;
+      
+      return content;
+    }
+  } catch (e) {
+    console.error(`Fehler beim Lesen von ${platz}:`, e);
+  }
+  return "https://www.youtube.com/embed/cHHLHGNpCSA"; // Fallback
+}
+
+const songs = [
+  {
+    rank: "Platz 1",
+    src: getMusicSrc('platz_1'),
+    title: "Der Hit des Tages",
+    desc: "Maximale Vibes für heute!",
+    color: "#fbbf24"
+  },
+  {
+    rank: "Platz 2",
+    src: getMusicSrc('Platz_2'),
+    title: "Chilliger Vibe",
+    desc: "Perfekt zum Arbeiten oder Entspannen.",
+    color: "#94a3b8"
+  },
+  {
+    rank: "Platz 3",
+    src: getMusicSrc('Platz_3'),
+    title: "Oldie but Goldie",
+    desc: "Ein Klassiker, der nie alt wird.",
+    color: "#a78bfa"
+  }
+];
 ---
 
 <Layout title={pageTitle}>
@@ -11,17 +63,18 @@ const pageTitle = "Music of the Day - Color Cloud";
   <style>
     main {
       padding: 4rem 2rem;
-      max-width: 1000px;
+      max-width: 1200px;
       margin: 0 auto;
+    }
+
+    .header {
       text-align: center;
+      margin-bottom: 4rem;
     }
 
     h1 {
-      font-size: 3rem;
-      background: linear-gradient(to right, #38bdf8, #8b5cf6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin-bottom: 2rem;
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
     }
 
     .back-link {
@@ -29,57 +82,110 @@ const pageTitle = "Music of the Day - Color Cloud";
       margin-bottom: 2rem;
       color: #38bdf8;
       text-decoration: none;
-      font-weight: 600;
-      transition: transform 0.3s ease;
+      font-weight: 500;
     }
 
-    .back-link:hover {
-      transform: translateX(-5px);
+    .music-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
     }
 
-    .video-container {
-      position: relative;
-      width: 100%;
-      padding-bottom: 56.25%; /* 16:9 Ratio */
-      height: 0;
-      border-radius: 24px;
-      overflow: hidden;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+    .music-card.rank-1 {
+      grid-column: 1 / -1;
       margin-bottom: 2rem;
     }
 
-    .video-container iframe {
-      position: absolute;
-      top: 0;
-      left: 0;
+    .music-card {
+      background: rgba(30, 41, 59, 0.4);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.4s ease;
+    }
+
+    .music-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--rank-color);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .rank-badge {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      border-radius: 100px;
+      background: var(--rank-color);
+      color: #0f172a;
+      font-weight: 800;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .music-container {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 1.5rem;
+      background: #000;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    iframe {
       width: 100%;
       height: 100%;
       border: none;
     }
 
-    p {
-      font-size: 1.2rem;
+    .info h2 {
+      margin: 0 0 0.5rem 0;
+      color: white;
+    }
+
+    .info p {
       color: #94a3b8;
+      margin: 0;
+    }
+
+    @media (max-width: 768px) {
+      .music-grid {
+        grid-template-columns: 1fr;
+      }
+      h1 { font-size: 2.5rem; }
     }
   </style>
 
   <main>
     <a href="/content" class="back-link reveal reveal-left">← Zurück zum Content Hub</a>
     
-    <h1 class="text-shimmer reveal">Music of the Day</h1>
-
-    <div class="video-container reveal reveal-scale delay-200">
-      <iframe
-        src="https://www.youtube.com/embed/cHHLHGNpCSA"
-        title="Avicii - Waiting For Love"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allowfullscreen></iframe>
+    <div class="header reveal">
+      <h1 class="text-shimmer">Music of the Day</h1>
+      <p>Die Top 3 Tracks - Direkt aus deinen Textdateien</p>
     </div>
 
-    <p class="reveal delay-400">
-      Unser heutiger Soundtrack: <strong>Avicii - Waiting For Love</strong>. Genieße die Vibes! 🎵
-    </p>
+    <div class="music-grid">
+      {songs.map((song, index) => (
+        <div 
+          class={`music-card rank-${index + 1} reveal reveal-scale delay-${(index + 1) * 200}`}
+          style={`--rank-color: ${song.color}`}
+        >
+          <span class="rank-badge">{song.rank}</span>
+          <div class="music-container">
+            <iframe
+              src={song.src}
+              title={song.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen></iframe>
+          </div>
+          <div class="info">
+            <h2>{song.title}</h2>
+            <p>{song.desc}</p>
+          </div>
+        </div>
+      ))}
+    </div>
   </main>
 </Layout>
