@@ -4,16 +4,22 @@ import Navbar from "../../components/Navbar.astro";
 import fs from 'node:fs';
 import path from 'node:path';
 
+import { fileURLToPath } from 'node:url';
+
 const pageTitle = "Top Music of the Day - Color Cloud";
 
 // Funktion zum Auslesen des Musik-Links und NSTH Status
 function getMusicData(platz) {
   try {
-    const filePath = path.join(process.cwd(), 'src', 'pages', 'content', 'Music-Of-the-Day', platz, 'music.txt');
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const filePath = path.join(__dirname, 'Music-Of-the-Day', platz, 'music.txt');
+    
     if (fs.existsSync(filePath)) {
-      const fullContent = fs.readFileSync(filePath, 'utf-8').split('\n');
-      const firstLine = fullContent[0].trim();
-      const secondLine = fullContent[1] ? fullContent[1].trim() : "";
+      const rawContent = fs.readFileSync(filePath, 'utf-8');
+      const lines = rawContent.split(/\r?\n/).map(l => l.trim()).filter(l => l !== "");
+      
+      const firstLine = lines[0] || "";
+      const isNSTH = lines.some(l => l.toUpperCase() === "NSTH");
       
       let src = "";
       const iframeMatch = firstLine.match(/src=["']([^"']+)["']/);
@@ -24,13 +30,10 @@ function getMusicData(platz) {
         src = idMatch ? `https://www.youtube.com/embed/${idMatch[1]}` : (firstLine.length === 11 ? `https://www.youtube.com/embed/${firstLine}` : firstLine);
       }
 
-      return {
-        src,
-        isNSTH: secondLine.toUpperCase() === "NSTH"
-      };
+      return { src, isNSTH };
     }
   } catch (e) {
-    console.error(`Fehler beim Lesen von ${platz}:`, e);
+    console.error(`Fehler bei ${platz}:`, e);
   }
   return { src: "https://www.youtube.com/embed/cHHLHGNpCSA", isNSTH: false };
 }
