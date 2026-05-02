@@ -3,63 +3,56 @@ import Layout from "../../layouts/Layout.astro";
 import Navbar from "../../components/Navbar.astro";
 import fs from 'node:fs';
 import path from 'node:path';
-
 import { fileURLToPath } from 'node:url';
 
 const pageTitle = "Top Videos of the Day - Color Cloud";
 
-// Funktion zum sicheren Auslesen des Video-Links (ID oder ganzer Iframe)
+// Wir suchen den Content-Ordner dynamisch
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Funktion zum Finden des Ordners (ignoriert Groß/Kleinschreibung)
+function getCorrectPath(parent, target) {
+  try {
+    const children = fs.readdirSync(parent);
+    const found = children.find(child => child.toLowerCase() === target.toLowerCase());
+    return found ? path.join(parent, found) : path.join(parent, target);
+  } catch(e) {
+    return path.join(parent, target);
+  }
+}
+
+const contentBase = getCorrectPath(__dirname, 'Video-Of-The-Day');
+
 function getVideoSrc(platz: string) {
   try {
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const filePath = path.join(__dirname, 'Video-Of-the-Day', platz, 'video.txt');
+    const platzDir = getCorrectPath(contentBase, platz);
+    const filePath = path.join(platzDir, 'video.txt');
     
     if (fs.existsSync(filePath)) {
       const rawContent = fs.readFileSync(filePath, 'utf-8');
       const lines = rawContent.split(/\r?\n/).map((l: string) => l.trim()).filter((l: string) => l !== "");
       const firstLine = lines[0] || "";
       
-      // 1. Suche nach dem src-Attribut, falls es ein Iframe-Code ist
       const iframeMatch = firstLine.match(/src=["']([^"']+)["']/);
-      if (iframeMatch) return iframeMatch[1];
+      if (iframeMatch) return { src: iframeMatch[1], error: false };
       
-      // 2. Suche nach einer YouTube ID im Text/Link
       const idMatch = firstLine.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
-      if (idMatch) return `https://www.youtube.com/embed/${idMatch[1]}`;
+      if (idMatch) return { src: `https://www.youtube.com/embed/${idMatch[1]}`, error: false };
       
-      // 3. Falls es nur die ID ist
-      if (firstLine.length === 11) return `https://www.youtube.com/embed/${firstLine}`;
+      if (firstLine.length === 11) return { src: `https://www.youtube.com/embed/${firstLine}`, error: false };
       
-      return firstLine;
+      return { src: firstLine, error: false };
     }
   } catch (e) {
     console.error(`Fehler bei ${platz}:`, e);
   }
-  return "https://www.youtube.com/embed/b0hL4mJInm0"; // Fallback
+  return { src: "https://www.youtube.com/embed/b0hL4mJInm0", error: true };
 }
 
 const videos = [
-  {
-    rank: "Platz 1",
-    src: getVideoSrc('platz_1'),
-    title: "Der heutige Spitzenreiter",
-    desc: "Gefällt dem Team am besten!",
-    color: "#fbbf24"
-  },
-  {
-    rank: "Platz 2",
-    src: getVideoSrc('Platz_2'),
-    title: "Starker Verfolger",
-    desc: "Ein Muss für heute.",
-    color: "#94a3b8"
-  },
-  {
-    rank: "Platz 3",
-    src: getVideoSrc('Platz_3'),
-    title: "Ehrenplatz",
-    desc: "Immer noch fantastisch.",
-    color: "#a78bfa"
-  }
+  { rank: "Platz 1", data: getVideoSrc('platz_1'), title: "Der heutige Spitzenreiter", desc: "Gefällt dem Team am besten!", color: "#fbbf24" },
+  { rank: "Platz 2", data: getVideoSrc('Platz_2'), title: "Starker Verfolger", desc: "Ein Muss für heute.", color: "#94a3b8" },
+  { rank: "Platz 3", data: getVideoSrc('Platz_3'), title: "Ehrenplatz", desc: "Immer noch fantastisch.", color: "#a78bfa" }
 ];
 ---
 
@@ -67,41 +60,12 @@ const videos = [
   <Navbar />
 
   <style>
-    main {
-      padding: 4rem 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 4rem;
-    }
-
-    h1 {
-      font-size: 3.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .back-link {
-      display: inline-block;
-      margin-bottom: 2rem;
-      color: #38bdf8;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2rem;
-    }
-
-    .video-card.rank-1 {
-      grid-column: 1 / -1;
-      margin-bottom: 2rem;
-    }
-
+    main { padding: 4rem 2rem; max-width: 1200px; margin: 0 auto; }
+    .header { text-align: center; margin-bottom: 4rem; }
+    h1 { font-size: 3.5rem; margin-bottom: 1rem; }
+    .back-link { display: inline-block; margin-bottom: 2rem; color: #38bdf8; text-decoration: none; font-weight: 500; }
+    .video-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+    .video-card.rank-1 { grid-column: 1 / -1; margin-bottom: 2rem; }
     .video-card {
       background: rgba(30, 41, 59, 0.4);
       backdrop-filter: blur(12px);
@@ -110,13 +74,7 @@ const videos = [
       border: 1px solid rgba(255, 255, 255, 0.1);
       transition: all 0.4s ease;
     }
-
-    .video-card:hover {
-      transform: translateY(-5px);
-      border-color: var(--rank-color);
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    }
-
+    .video-card:hover { transform: translateY(-5px); border-color: var(--rank-color); }
     .rank-badge {
       display: inline-block;
       padding: 0.4rem 1rem;
@@ -127,9 +85,7 @@ const videos = [
       font-size: 0.9rem;
       margin-bottom: 1rem;
       text-transform: uppercase;
-      letter-spacing: 1px;
     }
-
     .video-container {
       width: 100%;
       aspect-ratio: 16 / 9;
@@ -138,37 +94,18 @@ const videos = [
       margin-bottom: 1.5rem;
       background: #000;
     }
-
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    .info h2 {
-      margin: 0 0 0.5rem 0;
-      color: white;
-    }
-
-    .info p {
-      color: #94a3b8;
-      margin: 0;
-    }
-
-    @media (max-width: 768px) {
-      .video-grid {
-        grid-template-columns: 1fr;
-      }
-      h1 { font-size: 2.5rem; }
-    }
+    iframe { width: 100%; height: 100%; border: none; }
+    .info h2 { color: white; margin: 0 0 0.5rem 0; }
+    .info p { color: #94a3b8; margin: 0; }
+    .debug-info { color: #ef4444; font-size: 0.7rem; margin-top: 1rem; }
+    @media (max-width: 768px) { .video-grid { grid-template-columns: 1fr; } }
   </style>
 
   <main>
     <a href="/content" class="back-link reveal reveal-left">← Zurück zum Content Hub</a>
-    
     <div class="header reveal">
       <h1 class="text-shimmer">Videos of the Day</h1>
-      <p>Die Top 3 Favoriten - Gelesen aus deinen Dateien</p>
+      <p>Die Top 3 Favoriten von Color Cloud</p>
     </div>
 
     <div class="video-grid">
@@ -180,7 +117,7 @@ const videos = [
           <span class="rank-badge">{vid.rank}</span>
           <div class="video-container">
             <iframe
-              src={vid.src}
+              src={vid.data.src}
               title={vid.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen></iframe>
@@ -188,6 +125,7 @@ const videos = [
           <div class="info">
             <h2>{vid.title}</h2>
             <p>{vid.desc}</p>
+            {vid.data.error && <p class="debug-info">Fehler: Datei für {vid.rank} nicht gefunden.</p>}
           </div>
         </div>
       ))}

@@ -3,21 +3,30 @@ import Layout from "../../layouts/Layout.astro";
 import Navbar from "../../components/Navbar.astro";
 import fs from 'node:fs';
 import path from 'node:path';
-
 import { fileURLToPath } from 'node:url';
 
 const pageTitle = "Top Music of the Day - Color Cloud";
 
-// Funktion zum Auslesen des Musik-Links und NSTH Status
+// Wir suchen den Content-Ordner dynamisch
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Funktion zum Finden des Ordners (ignoriert Groß/Kleinschreibung)
+function getCorrectPath(parent, target) {
+  const children = fs.readdirSync(parent);
+  const found = children.find(child => child.toLowerCase() === target.toLowerCase());
+  return found ? path.join(parent, found) : path.join(parent, target);
+}
+
+const contentBase = getCorrectPath(__dirname, 'Music-Of-The-Day');
+
 function getMusicData(platz: string) {
   try {
-    const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const filePath = path.join(__dirname, 'Music-Of-The-Day', platz, 'music.txt');
+    const platzDir = getCorrectPath(contentBase, platz);
+    const filePath = path.join(platzDir, 'music.txt');
     
     if (fs.existsSync(filePath)) {
       const rawContent = fs.readFileSync(filePath, 'utf-8');
       const lines = rawContent.split(/\r?\n/).map((l: string) => l.trim()).filter((l: string) => l !== "");
-      
       const firstLine = lines[0] || "";
       const isNSTH = lines.some((l: string) => l.toUpperCase() === "NSTH");
       
@@ -29,13 +38,13 @@ function getMusicData(platz: string) {
         const idMatch = firstLine.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
         src = idMatch ? `https://www.youtube.com/embed/${idMatch[1]}` : (firstLine.length === 11 ? `https://www.youtube.com/embed/${firstLine}` : firstLine);
       }
-
-      return { src, isNSTH };
+      return { src, isNSTH, error: false };
     }
   } catch (e) {
     console.error(`Fehler bei ${platz}:`, e);
   }
-  return { src: "https://www.youtube.com/embed/cHHLHGNpCSA", isNSTH: false };
+  // Wenn nichts gefunden wird, zeigen wir das hier an (hilft beim Debuggen)
+  return { src: "https://www.youtube.com/embed/cHHLHGNpCSA", isNSTH: false, error: true };
 }
 
 const songs = [
@@ -49,19 +58,12 @@ const songs = [
   <Navbar />
 
   <style>
-    main {
-      padding: 4rem 2rem;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
+    main { padding: 4rem 2rem; max-width: 1200px; margin: 0 auto; }
     .header { text-align: center; margin-bottom: 4rem; }
     h1 { font-size: 3.5rem; margin-bottom: 1rem; }
     .back-link { display: inline-block; margin-bottom: 2rem; color: #38bdf8; text-decoration: none; font-weight: 500; }
-
     .music-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
     .music-card.rank-1 { grid-column: 1 / -1; margin-bottom: 2rem; }
-
     .music-card {
       background: rgba(30, 41, 59, 0.4);
       backdrop-filter: blur(12px);
@@ -71,9 +73,7 @@ const songs = [
       transition: all 0.4s ease;
       position: relative;
     }
-
     .music-card:hover { transform: translateY(-5px); border-color: var(--rank-color); }
-
     .rank-badge {
       display: inline-block;
       padding: 0.4rem 1rem;
@@ -85,7 +85,6 @@ const songs = [
       margin-bottom: 1rem;
       text-transform: uppercase;
     }
-
     .music-container {
       width: 100%;
       aspect-ratio: 16 / 9;
@@ -95,60 +94,26 @@ const songs = [
       background: #000;
       position: relative;
     }
-
     iframe { width: 100%; height: 100%; border: none; }
-
-    /* NSTH Styles */
     .nsth-overlay {
       position: absolute;
       top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(15, 23, 42, 0.9);
       backdrop-filter: blur(25px);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 10;
-      transition: all 0.5s ease;
-      padding: 2rem;
-      text-align: center;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      z-index: 10; transition: all 0.5s ease; padding: 2rem; text-align: center;
     }
-
-    .nsth-overlay.hidden {
-      opacity: 0;
-      pointer-events: none;
-      backdrop-filter: blur(0px);
-    }
-
-    .nsth-warning {
-      color: #ef4444;
-      font-weight: 800;
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .nsth-btn {
-      background: #ef4444;
-      color: white;
-      border: none;
-      padding: 0.8rem 1.5rem;
-      border-radius: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: transform 0.2s ease;
-    }
-
-    .nsth-btn:hover { transform: scale(1.05); }
-
+    .nsth-overlay.hidden { opacity: 0; pointer-events: none; }
+    .nsth-warning { color: #ef4444; font-weight: 800; font-size: 1.5rem; margin-bottom: 1rem; }
+    .nsth-btn { background: #ef4444; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer; }
     .info h2 { color: white; margin: 0 0 0.5rem 0; }
     .info p { color: #94a3b8; margin: 0; }
-
+    .debug-info { color: #ef4444; font-size: 0.7rem; margin-top: 1rem; }
     @media (max-width: 768px) { .music-grid { grid-template-columns: 1fr; } }
   </style>
 
   <main>
     <a href="/content" class="back-link reveal reveal-left">← Zurück zum Content Hub</a>
-    
     <div class="header reveal">
       <h1 class="text-shimmer">Music of the Day</h1>
       <p>Kuratierte Tracks von Color Cloud</p>
@@ -182,6 +147,7 @@ const songs = [
           <div class="info">
             <h2>{song.title}</h2>
             <p>{song.desc}</p>
+            {song.data.error && <p class="debug-info">Fehler: Datei für {song.rank} nicht gefunden.</p>}
           </div>
         </div>
       ))}
