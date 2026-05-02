@@ -4,13 +4,11 @@ import Navbar from "../../components/Navbar.astro";
 
 const pageTitle = "Top Music of the Day - Color Cloud";
 
-// Wir nutzen Astro's "Glob", um alle music.txt Dateien beim Build-Prozess einzusammeln
-// Das funktioniert auf jedem Server (Cloudflare, GitHub, etc.)
-const allMusicFiles = import.meta.glob('./Music-Of-The-Day/**/music.txt', { query: '?raw', eager: true });
+// Wir nutzen einen Wildcard-Glob, der bei 'the' und 'The' funktioniert
+const allMusicFiles = import.meta.glob('./Music-Of-*[tT]he-Day/**/music.txt', { query: '?raw', eager: true });
 
 function getMusicData(platz: string) {
   try {
-    // Wir suchen in den geladenen Dateien nach dem richtigen Pfad (ignoriert Groß/Kleinschreibung)
     const fileKey = Object.keys(allMusicFiles).find(key => 
       key.toLowerCase().includes(platz.toLowerCase())
     );
@@ -29,12 +27,12 @@ function getMusicData(platz: string) {
         const idMatch = firstLine.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
         src = idMatch ? `https://www.youtube.com/embed/${idMatch[1]}` : (firstLine.length === 11 ? `https://www.youtube.com/embed/${firstLine}` : firstLine);
       }
-      return { src, isNSTH, error: false };
+      return { src, isNSTH };
     }
   } catch (e) {
-    console.error(`Fehler bei ${platz}:`, e);
+    console.error(e);
   }
-  return { src: "https://www.youtube.com/embed/cHHLHGNpCSA", isNSTH: false, error: true };
+  return { src: "https://www.youtube.com/embed/cHHLHGNpCSA", isNSTH: false };
 }
 
 const songs = [
