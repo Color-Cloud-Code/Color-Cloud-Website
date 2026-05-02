@@ -6,40 +6,50 @@ import path from 'node:path';
 
 const pageTitle = "Top Videos of the Day - Color Cloud";
 
-// Funktion zum sicheren Auslesen der Video-ID
-function getVideoId(platz) {
+// Funktion zum sicheren Auslesen des Video-Links (ID oder ganzer Iframe)
+function getVideoSrc(platz) {
   try {
     const filePath = path.join(process.cwd(), 'src', 'pages', 'content', 'Video-Of-the-Day', platz, 'video.txt');
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, 'utf-8').trim();
-      // Falls ein ganzer Link eingefügt wurde, versuchen wir die ID zu extrahieren
-      const match = content.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
-      return match ? match[1] : content;
+      
+      // 1. Suche nach dem src-Attribut, falls es ein Iframe-Code ist
+      const iframeMatch = content.match(/src=["']([^"']+)["']/);
+      if (iframeMatch) return iframeMatch[1];
+      
+      // 2. Suche nach einer YouTube ID im Text/Link
+      const idMatch = content.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
+      if (idMatch) return `https://www.youtube.com/embed/${idMatch[1]}`;
+      
+      // 3. Falls es nur die ID ist
+      if (content.length === 11) return `https://www.youtube.com/embed/${content}`;
+      
+      return content; // Fallback für den Fall, dass es schon ein sauberer Link ist
     }
   } catch (e) {
     console.error(`Fehler beim Lesen von ${platz}:`, e);
   }
-  return "b0hL4mJInm0"; // Fallback
+  return "https://www.youtube.com/embed/b0hL4mJInm0"; // Fallback
 }
 
 const videos = [
   {
     rank: "Platz 1",
-    id: getVideoId('platz_1'),
+    src: getVideoSrc('platz_1'),
     title: "Der heutige Spitzenreiter",
     desc: "Gefällt dem Team am besten!",
     color: "#fbbf24"
   },
   {
     rank: "Platz 2",
-    id: getVideoId('Platz_2'),
+    src: getVideoSrc('Platz_2'),
     title: "Starker Verfolger",
     desc: "Ein Muss für heute.",
     color: "#94a3b8"
   },
   {
     rank: "Platz 3",
-    id: getVideoId('Platz_3'),
+    src: getVideoSrc('Platz_3'),
     title: "Ehrenplatz",
     desc: "Immer noch fantastisch.",
     color: "#a78bfa"
@@ -164,7 +174,7 @@ const videos = [
           <span class="rank-badge">{vid.rank}</span>
           <div class="video-container">
             <iframe
-              src={`https://www.youtube.com/embed/${vid.id}`}
+              src={vid.src}
               title={vid.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen></iframe>
