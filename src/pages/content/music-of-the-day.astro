@@ -6,54 +6,39 @@ import path from 'node:path';
 
 const pageTitle = "Top Music of the Day - Color Cloud";
 
-// Funktion zum sicheren Auslesen des Musik-Links (ID oder ganzer Iframe)
-function getMusicSrc(platz) {
+// Funktion zum Auslesen des Musik-Links und NSTH Status
+function getMusicData(platz) {
   try {
     const filePath = path.join(process.cwd(), 'src', 'pages', 'content', 'Music-Of-the-Day', platz, 'music.txt');
     if (fs.existsSync(filePath)) {
-      const content = fs.readFileSync(filePath, 'utf-8').trim();
+      const fullContent = fs.readFileSync(filePath, 'utf-8').split('\n');
+      const firstLine = fullContent[0].trim();
+      const secondLine = fullContent[1] ? fullContent[1].trim() : "";
       
-      // 1. Suche nach dem src-Attribut, falls es ein Iframe-Code ist (Spotify, YouTube, etc.)
-      const iframeMatch = content.match(/src=["']([^"']+)["']/);
-      if (iframeMatch) return iframeMatch[1];
-      
-      // 2. Suche nach einer YouTube ID
-      const idMatch = content.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
-      if (idMatch) return `https://www.youtube.com/embed/${idMatch[1]}`;
-      
-      // 3. Falls es nur die ID ist (Fallback auf YouTube)
-      if (content.length === 11) return `https://www.youtube.com/embed/${content}`;
-      
-      return content;
+      let src = "";
+      const iframeMatch = firstLine.match(/src=["']([^"']+)["']/);
+      if (iframeMatch) {
+        src = iframeMatch[1];
+      } else {
+        const idMatch = firstLine.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
+        src = idMatch ? `https://www.youtube.com/embed/${idMatch[1]}` : (firstLine.length === 11 ? `https://www.youtube.com/embed/${firstLine}` : firstLine);
+      }
+
+      return {
+        src,
+        isNSTH: secondLine.toUpperCase() === "NSTH"
+      };
     }
   } catch (e) {
     console.error(`Fehler beim Lesen von ${platz}:`, e);
   }
-  return "https://www.youtube.com/embed/cHHLHGNpCSA"; // Fallback
+  return { src: "https://www.youtube.com/embed/cHHLHGNpCSA", isNSTH: false };
 }
 
 const songs = [
-  {
-    rank: "Platz 1",
-    src: getMusicSrc('platz_1'),
-    title: "Der Hit des Tages",
-    desc: "Maximale Vibes für heute!",
-    color: "#fbbf24"
-  },
-  {
-    rank: "Platz 2",
-    src: getMusicSrc('Platz_2'),
-    title: "Chilliger Vibe",
-    desc: "Perfekt zum Arbeiten oder Entspannen.",
-    color: "#94a3b8"
-  },
-  {
-    rank: "Platz 3",
-    src: getMusicSrc('Platz_3'),
-    title: "Oldie but Goldie",
-    desc: "Ein Klassiker, der nie alt wird.",
-    color: "#a78bfa"
-  }
+  { rank: "Platz 1", data: getMusicData('platz_1'), title: "Der Hit des Tages", desc: "Maximale Vibes für heute!", color: "#fbbf24" },
+  { rank: "Platz 2", data: getMusicData('Platz_2'), title: "Chilliger Vibe", desc: "Perfekt zum Arbeiten oder Entspannen.", color: "#94a3b8" },
+  { rank: "Platz 3", data: getMusicData('Platz_3'), title: "Oldie but Goldie", desc: "Ein Klassiker, der nie alt wird.", color: "#a78bfa" }
 ];
 ---
 
@@ -67,34 +52,12 @@ const songs = [
       margin: 0 auto;
     }
 
-    .header {
-      text-align: center;
-      margin-bottom: 4rem;
-    }
+    .header { text-align: center; margin-bottom: 4rem; }
+    h1 { font-size: 3.5rem; margin-bottom: 1rem; }
+    .back-link { display: inline-block; margin-bottom: 2rem; color: #38bdf8; text-decoration: none; font-weight: 500; }
 
-    h1 {
-      font-size: 3.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .back-link {
-      display: inline-block;
-      margin-bottom: 2rem;
-      color: #38bdf8;
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .music-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2rem;
-    }
-
-    .music-card.rank-1 {
-      grid-column: 1 / -1;
-      margin-bottom: 2rem;
-    }
+    .music-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
+    .music-card.rank-1 { grid-column: 1 / -1; margin-bottom: 2rem; }
 
     .music-card {
       background: rgba(30, 41, 59, 0.4);
@@ -103,13 +66,10 @@ const songs = [
       padding: 1.5rem;
       border: 1px solid rgba(255, 255, 255, 0.1);
       transition: all 0.4s ease;
+      position: relative;
     }
 
-    .music-card:hover {
-      transform: translateY(-5px);
-      border-color: var(--rank-color);
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-    }
+    .music-card:hover { transform: translateY(-5px); border-color: var(--rank-color); }
 
     .rank-badge {
       display: inline-block;
@@ -121,7 +81,6 @@ const songs = [
       font-size: 0.9rem;
       margin-bottom: 1rem;
       text-transform: uppercase;
-      letter-spacing: 1px;
     }
 
     .music-container {
@@ -131,31 +90,57 @@ const songs = [
       overflow: hidden;
       margin-bottom: 1.5rem;
       background: #000;
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      position: relative;
     }
 
-    iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
+    iframe { width: 100%; height: 100%; border: none; }
+
+    /* NSTH Styles */
+    .nsth-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(25px);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      transition: all 0.5s ease;
+      padding: 2rem;
+      text-align: center;
     }
 
-    .info h2 {
-      margin: 0 0 0.5rem 0;
+    .nsth-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+      backdrop-filter: blur(0px);
+    }
+
+    .nsth-warning {
+      color: #ef4444;
+      font-weight: 800;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .nsth-btn {
+      background: #ef4444;
       color: white;
+      border: none;
+      padding: 0.8rem 1.5rem;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s ease;
     }
 
-    .info p {
-      color: #94a3b8;
-      margin: 0;
-    }
+    .nsth-btn:hover { transform: scale(1.05); }
 
-    @media (max-width: 768px) {
-      .music-grid {
-        grid-template-columns: 1fr;
-      }
-      h1 { font-size: 2.5rem; }
-    }
+    .info h2 { color: white; margin: 0 0 0.5rem 0; }
+    .info p { color: #94a3b8; margin: 0; }
+
+    @media (max-width: 768px) { .music-grid { grid-template-columns: 1fr; } }
   </style>
 
   <main>
@@ -163,7 +148,7 @@ const songs = [
     
     <div class="header reveal">
       <h1 class="text-shimmer">Music of the Day</h1>
-      <p>Die Top 3 Tracks - Direkt aus deinen Textdateien</p>
+      <p>Kuratierte Tracks von Color Cloud</p>
     </div>
 
     <div class="music-grid">
@@ -173,13 +158,24 @@ const songs = [
           style={`--rank-color: ${song.color}`}
         >
           <span class="rank-badge">{song.rank}</span>
+          
           <div class="music-container">
+            {song.data.isNSTH && (
+              <div class="nsth-overlay" id={`overlay-${index}`}>
+                <div class="nsth-warning">⚠️ NSTH WARNUNG</div>
+                <p style="color: white; margin-bottom: 1.5rem;">Dieser Inhalt könnte ungeeignet sein.</p>
+                <button class="nsth-btn" onclick={`document.getElementById('overlay-${index}').classList.add('hidden')`}>
+                  Inhalt anzeigen
+                </button>
+              </div>
+            )}
             <iframe
-              src={song.src}
+              src={song.data.src}
               title={song.title}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen></iframe>
           </div>
+
           <div class="info">
             <h2>{song.title}</h2>
             <p>{song.desc}</p>
