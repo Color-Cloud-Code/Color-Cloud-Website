@@ -9,17 +9,17 @@ import { fileURLToPath } from 'node:url';
 const pageTitle = "Top Music of the Day - Color Cloud";
 
 // Funktion zum Auslesen des Musik-Links und NSTH Status
-function getMusicData(platz) {
+function getMusicData(platz: string) {
   try {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const filePath = path.join(__dirname, 'Music-Of-the-Day', platz, 'music.txt');
     
     if (fs.existsSync(filePath)) {
       const rawContent = fs.readFileSync(filePath, 'utf-8');
-      const lines = rawContent.split(/\r?\n/).map(l => l.trim()).filter(l => l !== "");
+      const lines = rawContent.split(/\r?\n/).map((l: string) => l.trim()).filter((l: string) => l !== "");
       
       const firstLine = lines[0] || "";
-      const isNSTH = lines.some(l => l.toUpperCase() === "NSTH");
+      const isNSTH = lines.some((l: string) => l.toUpperCase() === "NSTH");
       
       let src = "";
       const iframeMatch = firstLine.match(/src=["']([^"']+)["']/);
