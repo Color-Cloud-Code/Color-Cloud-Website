@@ -4,40 +4,37 @@ import Navbar from "../../components/Navbar.astro";
 
 const pageTitle = "Top Videos of the Day - Color Cloud";
 
-// Wir nutzen Astro's "Glob", um alle video.txt Dateien beim Build-Prozess einzusammeln
-const allVideoFiles = import.meta.glob('./Video-Of-The-Day/**/video.txt', { query: '?raw', eager: true });
+const allVideoFiles = import.meta.glob('./Video-Data/*.txt', { query: '?raw', eager: true });
 
-function getVideoData(platz: string) {
+function getVideoData(num: string) {
   try {
-    const fileKey = Object.keys(allVideoFiles).find(key => 
-      key.toLowerCase().includes(platz.toLowerCase())
-    );
+    const fileKey = `./Video-Data/${num}.txt`;
+    const rawContent = allVideoFiles[fileKey]?.default;
 
-    if (fileKey) {
-      const rawContent = allVideoFiles[fileKey].default;
+    if (rawContent) {
       const lines = rawContent.split(/\r?\n/).map((l: string) => l.trim()).filter((l: string) => l !== "");
       const firstLine = lines[0] || "";
       
+      let src = "";
       const iframeMatch = firstLine.match(/src=["']([^"']+)["']/);
-      if (iframeMatch) return { src: iframeMatch[1], error: false };
-      
-      const idMatch = firstLine.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
-      if (idMatch) return { src: `https://www.youtube.com/embed/${idMatch[1]}`, error: false };
-      
-      if (firstLine.length === 11) return { src: `https://www.youtube.com/embed/${firstLine}`, error: false };
-      
-      return { src: firstLine, error: false };
+      if (iframeMatch) {
+        src = iframeMatch[1];
+      } else {
+        const idMatch = firstLine.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&]{11})/);
+        src = idMatch ? `https://www.youtube.com/embed/${idMatch[1]}` : (firstLine.length === 11 ? `https://www.youtube.com/embed/${firstLine}` : firstLine);
+      }
+      return { src };
     }
   } catch (e) {
-    console.error(`Fehler bei ${platz}:`, e);
+    console.error(e);
   }
-  return { src: "https://www.youtube.com/embed/b0hL4mJInm0", error: true };
+  return { src: "https://www.youtube.com/embed/b0hL4mJInm0" };
 }
 
 const videos = [
-  { rank: "Platz 1", data: getVideoData('platz_1'), title: "Der heutige Spitzenreiter", desc: "Gefällt dem Team am besten!", color: "#fbbf24" },
-  { rank: "Platz 2", data: getVideoData('Platz_2'), title: "Starker Verfolger", desc: "Ein Muss für heute.", color: "#94a3b8" },
-  { rank: "Platz 3", data: getVideoData('Platz_3'), title: "Ehrenplatz", desc: "Immer noch fantastisch.", color: "#a78bfa" }
+  { rank: "Platz 1", data: getVideoData('1'), title: "Der heutige Spitzenreiter", desc: "Gefällt dem Team am besten!", color: "#fbbf24" },
+  { rank: "Platz 2", data: getVideoData('2'), title: "Starker Verfolger", desc: "Ein Muss für heute.", color: "#94a3b8" },
+  { rank: "Platz 3", data: getVideoData('3'), title: "Ehrenplatz", desc: "Immer noch fantastisch.", color: "#a78bfa" }
 ];
 ---
 
@@ -52,12 +49,8 @@ const videos = [
     .video-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
     .video-card.rank-1 { grid-column: 1 / -1; margin-bottom: 2rem; }
     .video-card {
-      background: rgba(30, 41, 59, 0.4);
-      backdrop-filter: blur(12px);
-      border-radius: 24px;
-      padding: 1.5rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.4s ease;
+      background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-radius: 24px;
+      padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.4s ease;
     }
     .video-card:hover { transform: translateY(-5px); border-color: var(--rank-color); }
     .rank-badge {

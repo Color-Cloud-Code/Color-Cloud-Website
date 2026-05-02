@@ -4,17 +4,15 @@ import Navbar from "../../components/Navbar.astro";
 
 const pageTitle = "Top Music of the Day - Color Cloud";
 
-// Wir nutzen einen Wildcard-Glob, der bei 'the' und 'The' funktioniert
-const allMusicFiles = import.meta.glob('./Music-Of-*[tT]he-Day/**/music.txt', { query: '?raw', eager: true });
+// Wir laden einfach alle .txt Dateien aus dem Music-Data Ordner
+const allMusicFiles = import.meta.glob('./Music-Data/*.txt', { query: '?raw', eager: true });
 
-function getMusicData(platz: string) {
+function getMusicData(num: string) {
   try {
-    const fileKey = Object.keys(allMusicFiles).find(key => 
-      key.toLowerCase().includes(platz.toLowerCase())
-    );
+    const fileKey = `./Music-Data/${num}.txt`;
+    const rawContent = allMusicFiles[fileKey]?.default;
 
-    if (fileKey) {
-      const rawContent = allMusicFiles[fileKey].default;
+    if (rawContent) {
       const lines = rawContent.split(/\r?\n/).map((l: string) => l.trim()).filter((l: string) => l !== "");
       const firstLine = lines[0] || "";
       const isNSTH = lines.some((l: string) => l.toUpperCase() === "NSTH");
@@ -36,9 +34,9 @@ function getMusicData(platz: string) {
 }
 
 const songs = [
-  { rank: "Platz 1", data: getMusicData('platz_1'), title: "Der Hit des Tages", desc: "Maximale Vibes für heute!", color: "#fbbf24" },
-  { rank: "Platz 2", data: getMusicData('Platz_2'), title: "Chilliger Vibe", desc: "Perfekt zum Arbeiten oder Entspannen.", color: "#94a3b8" },
-  { rank: "Platz 3", data: getMusicData('Platz_3'), title: "Oldie but Goldie", desc: "Ein Klassiker, der nie alt wird.", color: "#a78bfa" }
+  { rank: "Platz 1", data: getMusicData('1'), title: "Der Hit des Tages", desc: "Maximale Vibes für heute!", color: "#fbbf24" },
+  { rank: "Platz 2", data: getMusicData('2'), title: "Chilliger Vibe", desc: "Perfekt zum Arbeiten oder Entspannen.", color: "#94a3b8" },
+  { rank: "Platz 3", data: getMusicData('3'), title: "Oldie but Goldie", desc: "Ein Klassiker, der nie alt wird.", color: "#a78bfa" }
 ];
 ---
 
@@ -53,12 +51,8 @@ const songs = [
     .music-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem; }
     .music-card.rank-1 { grid-column: 1 / -1; margin-bottom: 2rem; }
     .music-card {
-      background: rgba(30, 41, 59, 0.4);
-      backdrop-filter: blur(12px);
-      border-radius: 24px;
-      padding: 1.5rem;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      transition: all 0.4s ease;
+      background: rgba(30, 41, 59, 0.4); backdrop-filter: blur(12px); border-radius: 24px;
+      padding: 1.5rem; border: 1px solid rgba(255, 255, 255, 0.1); transition: all 0.4s ease;
       position: relative;
     }
     .music-card:hover { transform: translateY(-5px); border-color: var(--rank-color); }
@@ -96,7 +90,6 @@ const songs = [
           style={`--rank-color: ${song.color}`}
         >
           <span class="rank-badge">{song.rank}</span>
-          
           <div class="music-container">
             {song.data.isNSTH && (
               <div class="nsth-overlay" id={`overlay-${index}`}>
@@ -113,7 +106,6 @@ const songs = [
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowfullscreen></iframe>
           </div>
-
           <div class="info">
             <h2>{song.title}</h2>
             <p>{song.desc}</p>
