@@ -3,29 +3,25 @@ import Layout from "../../layouts/Layout.astro";
 import Navbar from "../../components/Navbar.astro";
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 const pageTitle = "Top Music of the Day - Color Cloud";
 
-// Wir suchen den Content-Ordner dynamisch
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-// Funktion zum Finden des Ordners (ignoriert Groß/Kleinschreibung)
-function getCorrectPath(parent, target) {
-  const children = fs.readdirSync(parent);
-  const found = children.find(child => child.toLowerCase() === target.toLowerCase());
-  return found ? path.join(parent, found) : path.join(parent, target);
-}
-
-const contentBase = getCorrectPath(__dirname, 'Music-Of-The-Day');
+// Wir nutzen process.cwd(), um vom Hauptordner des Projekts zu starten
+const PROJECT_ROOT = process.cwd();
 
 function getMusicData(platz: string) {
   try {
-    const platzDir = getCorrectPath(contentBase, platz);
-    const filePath = path.join(platzDir, 'music.txt');
+    // Der Pfad zu deinen Ordnern vom Hauptverzeichnis aus
+    const filePath = path.join(PROJECT_ROOT, 'src', 'pages', 'content', 'Music-Of-The-Day', platz, 'music.txt');
     
-    if (fs.existsSync(filePath)) {
-      const rawContent = fs.readFileSync(filePath, 'utf-8');
+    // Falls der Pfad mit großem "T" nicht geht, probieren wir das kleine "t"
+    let finalPath = filePath;
+    if (!fs.existsSync(finalPath)) {
+        finalPath = path.join(PROJECT_ROOT, 'src', 'pages', 'content', 'Music-Of-the-Day', platz, 'music.txt');
+    }
+
+    if (fs.existsSync(finalPath)) {
+      const rawContent = fs.readFileSync(finalPath, 'utf-8');
       const lines = rawContent.split(/\r?\n/).map((l: string) => l.trim()).filter((l: string) => l !== "");
       const firstLine = lines[0] || "";
       const isNSTH = lines.some((l: string) => l.toUpperCase() === "NSTH");
@@ -40,11 +36,10 @@ function getMusicData(platz: string) {
       }
       return { src, isNSTH, error: false };
     }
+    return { src: "https://www.youtube.com/embed/cHHLHGNpCSA", isNSTH: false, error: true, debugPath: finalPath };
   } catch (e) {
-    console.error(`Fehler bei ${platz}:`, e);
+    return { src: "https://www.youtube.com/embed/cHHLHGNpCSA", isNSTH: false, error: true };
   }
-  // Wenn nichts gefunden wird, zeigen wir das hier an (hilft beim Debuggen)
-  return { src: "https://www.youtube.com/embed/cHHLHGNpCSA", isNSTH: false, error: true };
 }
 
 const songs = [
@@ -108,7 +103,7 @@ const songs = [
     .nsth-btn { background: #ef4444; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer; }
     .info h2 { color: white; margin: 0 0 0.5rem 0; }
     .info p { color: #94a3b8; margin: 0; }
-    .debug-info { color: #ef4444; font-size: 0.7rem; margin-top: 1rem; }
+    .debug-info { color: #ef4444; font-size: 0.7rem; margin-top: 1rem; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 5px; }
     @media (max-width: 768px) { .music-grid { grid-template-columns: 1fr; } }
   </style>
 
@@ -147,7 +142,12 @@ const songs = [
           <div class="info">
             <h2>{song.title}</h2>
             <p>{song.desc}</p>
-            {song.data.error && <p class="debug-info">Fehler: Datei für {song.rank} nicht gefunden.</p>}
+            {song.data.error && (
+              <div class="debug-info">
+                <p>Fehler: Datei nicht gefunden!</p>
+                <p>Gesuchter Pfad: {song.data.debugPath}</p>
+              </div>
+            )}
           </div>
         </div>
       ))}
