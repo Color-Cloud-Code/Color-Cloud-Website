@@ -1,27 +1,22 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Navbar from "../../components/Navbar.astro";
-import fs from 'node:fs';
-import path from 'node:path';
 
 const pageTitle = "Top Music of the Day - Color Cloud";
 
-// Wir nutzen process.cwd(), um vom Hauptordner des Projekts zu starten
-const PROJECT_ROOT = process.cwd();
+// Wir nutzen Astro's "Glob", um alle music.txt Dateien beim Build-Prozess einzusammeln
+// Das funktioniert auf jedem Server (Cloudflare, GitHub, etc.)
+const allMusicFiles = import.meta.glob('./Music-Of-The-Day/**/music.txt', { query: '?raw', eager: true });
 
 function getMusicData(platz: string) {
   try {
-    // Der Pfad zu deinen Ordnern vom Hauptverzeichnis aus
-    const filePath = path.join(PROJECT_ROOT, 'src', 'pages', 'content', 'Music-Of-The-Day', platz, 'music.txt');
-    
-    // Falls der Pfad mit großem "T" nicht geht, probieren wir das kleine "t"
-    let finalPath = filePath;
-    if (!fs.existsSync(finalPath)) {
-        finalPath = path.join(PROJECT_ROOT, 'src', 'pages', 'content', 'Music-Of-the-Day', platz, 'music.txt');
-    }
+    // Wir suchen in den geladenen Dateien nach dem richtigen Pfad (ignoriert Groß/Kleinschreibung)
+    const fileKey = Object.keys(allMusicFiles).find(key => 
+      key.toLowerCase().includes(platz.toLowerCase())
+    );
 
-    if (fs.existsSync(finalPath)) {
-      const rawContent = fs.readFileSync(finalPath, 'utf-8');
+    if (fileKey) {
+      const rawContent = allMusicFiles[fileKey].default;
       const lines = rawContent.split(/\r?\n/).map((l: string) => l.trim()).filter((l: string) => l !== "");
       const firstLine = lines[0] || "";
       const isNSTH = lines.some((l: string) => l.toUpperCase() === "NSTH");
@@ -36,10 +31,10 @@ function getMusicData(platz: string) {
       }
       return { src, isNSTH, error: false };
     }
-    return { src: "https://www.youtube.com/embed/cHHLHGNpCSA", isNSTH: false, error: true, debugPath: finalPath };
   } catch (e) {
-    return { src: "https://www.youtube.com/embed/cHHLHGNpCSA", isNSTH: false, error: true };
+    console.error(`Fehler bei ${platz}:`, e);
   }
+  return { src: "https://www.youtube.com/embed/cHHLHGNpCSA", isNSTH: false, error: true };
 }
 
 const songs = [
@@ -70,31 +65,14 @@ const songs = [
     }
     .music-card:hover { transform: translateY(-5px); border-color: var(--rank-color); }
     .rank-badge {
-      display: inline-block;
-      padding: 0.4rem 1rem;
-      border-radius: 100px;
-      background: var(--rank-color);
-      color: #0f172a;
-      font-weight: 800;
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
-      text-transform: uppercase;
+      display: inline-block; padding: 0.4rem 1rem; border-radius: 100px; background: var(--rank-color);
+      color: #0f172a; font-weight: 800; font-size: 0.9rem; margin-bottom: 1rem; text-transform: uppercase;
     }
-    .music-container {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      border-radius: 16px;
-      overflow: hidden;
-      margin-bottom: 1.5rem;
-      background: #000;
-      position: relative;
-    }
+    .music-container { width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; margin-bottom: 1.5rem; background: #000; position: relative; }
     iframe { width: 100%; height: 100%; border: none; }
     .nsth-overlay {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(15, 23, 42, 0.9);
-      backdrop-filter: blur(25px);
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(25px);
       display: flex; flex-direction: column; justify-content: center; align-items: center;
       z-index: 10; transition: all 0.5s ease; padding: 2rem; text-align: center;
     }
@@ -103,7 +81,6 @@ const songs = [
     .nsth-btn { background: #ef4444; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 12px; font-weight: 700; cursor: pointer; }
     .info h2 { color: white; margin: 0 0 0.5rem 0; }
     .info p { color: #94a3b8; margin: 0; }
-    .debug-info { color: #ef4444; font-size: 0.7rem; margin-top: 1rem; background: rgba(0,0,0,0.3); padding: 5px; border-radius: 5px; }
     @media (max-width: 768px) { .music-grid { grid-template-columns: 1fr; } }
   </style>
 
@@ -142,12 +119,6 @@ const songs = [
           <div class="info">
             <h2>{song.title}</h2>
             <p>{song.desc}</p>
-            {song.data.error && (
-              <div class="debug-info">
-                <p>Fehler: Datei nicht gefunden!</p>
-                <p>Gesuchter Pfad: {song.data.debugPath}</p>
-              </div>
-            )}
           </div>
         </div>
       ))}

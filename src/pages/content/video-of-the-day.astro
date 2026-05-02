@@ -1,35 +1,20 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import Navbar from "../../components/Navbar.astro";
-import fs from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 const pageTitle = "Top Videos of the Day - Color Cloud";
 
-// Wir suchen den Content-Ordner dynamisch
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+// Wir nutzen Astro's "Glob", um alle video.txt Dateien beim Build-Prozess einzusammeln
+const allVideoFiles = import.meta.glob('./Video-Of-The-Day/**/video.txt', { query: '?raw', eager: true });
 
-// Funktion zum Finden des Ordners (ignoriert Groß/Kleinschreibung)
-function getCorrectPath(parent, target) {
+function getVideoData(platz: string) {
   try {
-    const children = fs.readdirSync(parent);
-    const found = children.find(child => child.toLowerCase() === target.toLowerCase());
-    return found ? path.join(parent, found) : path.join(parent, target);
-  } catch(e) {
-    return path.join(parent, target);
-  }
-}
+    const fileKey = Object.keys(allVideoFiles).find(key => 
+      key.toLowerCase().includes(platz.toLowerCase())
+    );
 
-const contentBase = getCorrectPath(__dirname, 'Video-Of-The-Day');
-
-function getVideoSrc(platz: string) {
-  try {
-    const platzDir = getCorrectPath(contentBase, platz);
-    const filePath = path.join(platzDir, 'video.txt');
-    
-    if (fs.existsSync(filePath)) {
-      const rawContent = fs.readFileSync(filePath, 'utf-8');
+    if (fileKey) {
+      const rawContent = allVideoFiles[fileKey].default;
       const lines = rawContent.split(/\r?\n/).map((l: string) => l.trim()).filter((l: string) => l !== "");
       const firstLine = lines[0] || "";
       
@@ -50,9 +35,9 @@ function getVideoSrc(platz: string) {
 }
 
 const videos = [
-  { rank: "Platz 1", data: getVideoSrc('platz_1'), title: "Der heutige Spitzenreiter", desc: "Gefällt dem Team am besten!", color: "#fbbf24" },
-  { rank: "Platz 2", data: getVideoSrc('Platz_2'), title: "Starker Verfolger", desc: "Ein Muss für heute.", color: "#94a3b8" },
-  { rank: "Platz 3", data: getVideoSrc('Platz_3'), title: "Ehrenplatz", desc: "Immer noch fantastisch.", color: "#a78bfa" }
+  { rank: "Platz 1", data: getVideoData('platz_1'), title: "Der heutige Spitzenreiter", desc: "Gefällt dem Team am besten!", color: "#fbbf24" },
+  { rank: "Platz 2", data: getVideoData('Platz_2'), title: "Starker Verfolger", desc: "Ein Muss für heute.", color: "#94a3b8" },
+  { rank: "Platz 3", data: getVideoData('Platz_3'), title: "Ehrenplatz", desc: "Immer noch fantastisch.", color: "#a78bfa" }
 ];
 ---
 
@@ -76,28 +61,13 @@ const videos = [
     }
     .video-card:hover { transform: translateY(-5px); border-color: var(--rank-color); }
     .rank-badge {
-      display: inline-block;
-      padding: 0.4rem 1rem;
-      border-radius: 100px;
-      background: var(--rank-color);
-      color: #0f172a;
-      font-weight: 800;
-      font-size: 0.9rem;
-      margin-bottom: 1rem;
-      text-transform: uppercase;
+      display: inline-block; padding: 0.4rem 1rem; border-radius: 100px; background: var(--rank-color);
+      color: #0f172a; font-weight: 800; font-size: 0.9rem; margin-bottom: 1rem; text-transform: uppercase;
     }
-    .video-container {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      border-radius: 16px;
-      overflow: hidden;
-      margin-bottom: 1.5rem;
-      background: #000;
-    }
+    .video-container { width: 100%; aspect-ratio: 16 / 9; border-radius: 16px; overflow: hidden; margin-bottom: 1.5rem; background: #000; }
     iframe { width: 100%; height: 100%; border: none; }
     .info h2 { color: white; margin: 0 0 0.5rem 0; }
     .info p { color: #94a3b8; margin: 0; }
-    .debug-info { color: #ef4444; font-size: 0.7rem; margin-top: 1rem; }
     @media (max-width: 768px) { .video-grid { grid-template-columns: 1fr; } }
   </style>
 
@@ -125,7 +95,6 @@ const videos = [
           <div class="info">
             <h2>{vid.title}</h2>
             <p>{vid.desc}</p>
-            {vid.data.error && <p class="debug-info">Fehler: Datei für {vid.rank} nicht gefunden.</p>}
           </div>
         </div>
       ))}
