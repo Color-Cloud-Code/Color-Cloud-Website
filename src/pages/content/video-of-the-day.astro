@@ -2,7 +2,31 @@
 import Layout from "../../layouts/Layout.astro";
 import Navbar from "../../components/Navbar.astro";
 
-const pageTitle = "Video of the Day - Color Cloud";
+const pageTitle = "Top Videos of the Day - Color Cloud";
+
+const videos = [
+  {
+    rank: "Platz 1",
+    id: "b0hL4mJInm0",
+    title: "I found out I have ADHD.",
+    desc: "Der heutige Spitzenreiter!",
+    color: "#fbbf24" // Gold
+  },
+  {
+    rank: "Platz 2",
+    id: "cHHLHGNpCSA", // Platzhalter: Avicii
+    title: "Waiting For Love",
+    desc: "Ein starker zweiter Platz.",
+    color: "#94a3b8" // Silber
+  },
+  {
+    rank: "Platz 3",
+    id: "q0hyYWKXF0Q", // Platzhalter: Ein anderes Video
+    title: "Lofi Beats",
+    desc: "Immerhin noch auf dem Treppchen!",
+    color: "#a78bfa" // Bronze/Lila Mix
+  }
+];
 ---
 
 <Layout title={pageTitle}>
@@ -11,84 +35,130 @@ const pageTitle = "Video of the Day - Color Cloud";
   <style>
     main {
       padding: 4rem 2rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
     }
 
-    .back-link {
-      align-self: flex-start;
-      max-width: 900px;
-      margin: 0 auto 1rem auto;
-      width: 100%;
-      color: #38bdf8;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-weight: 500;
-      transition: opacity 0.2s ease;
-    }
-
-    .back-link:hover {
-      opacity: 0.8;
+    .header {
+      text-align: center;
+      margin-bottom: 4rem;
     }
 
     h1 {
-      font-size: 2.5rem;
-      background: linear-gradient(to right, #38bdf8, #8b5cf6);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      margin: 0;
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 2rem;
+      color: #38bdf8;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    /* Video Grid */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 2rem;
+    }
+
+    /* Platz 1 nimmt die volle Breite ein */
+    .video-card.rank-1 {
+      grid-column: 1 / -1;
+      margin-bottom: 2rem;
+    }
+
+    .video-card {
+      background: rgba(30, 41, 59, 0.4);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.4s ease;
+    }
+
+    .video-card:hover {
+      transform: translateY(-5px);
+      border-color: var(--rank-color);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .rank-badge {
+      display: inline-block;
+      padding: 0.4rem 1rem;
+      border-radius: 100px;
+      background: var(--rank-color);
+      color: #0f172a;
+      font-weight: 800;
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
     .video-container {
       width: 100%;
-      max-width: 900px;
       aspect-ratio: 16 / 9;
-      box-shadow: 0 0 30px rgba(56, 189, 248, 0.2);
       border-radius: 16px;
       overflow: hidden;
-      border: 1px solid rgba(56, 189, 248, 0.3);
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-
-    .video-container:hover {
-      box-shadow: 0 0 50px rgba(56, 189, 248, 0.5);
-      border-color: rgba(56, 189, 248, 0.6);
-      transform: translateY(-10px) scale(1.02);
+      margin-bottom: 1.5rem;
+      background: #000;
     }
 
     iframe {
       width: 100%;
       height: 100%;
+      border: none;
     }
 
-    p {
+    .info h2 {
+      margin: 0 0 0.5rem 0;
+      color: white;
+    }
+
+    .info p {
       color: #94a3b8;
-      text-align: center;
+      margin: 0;
+    }
+
+    @media (max-width: 768px) {
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+      h1 { font-size: 2.5rem; }
     }
   </style>
 
   <main>
-    <a href="/content" class="back-link reveal reveal-left"
-      >← Zurück zum Content Hub</a
-    >
-    <h1 class="reveal">Video of the Day</h1>
-    <div class="video-container reveal reveal-scale delay-200">
-      <iframe
-        width="815"
-        height="458"
-        src="https://www.youtube.com/embed/b0hL4mJInm0"
-        title="I found out I have ADHD."
-        frameborder="0"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-        referrerpolicy="strict-origin-when-cross-origin"
-        allowfullscreen></iframe>
+    <a href="/content" class="back-link reveal reveal-left">← Zurück zum Content Hub</a>
+    
+    <div class="header reveal">
+      <h1 class="text-shimmer">Videos of the Day</h1>
+      <p>Die Top 3 Favoriten von Color Cloud</p>
     </div>
-    <p class="reveal delay-400">
-      Video of the Day gewählt von den Mitarbeitern von Color Cloud
-    </p>
+
+    <div class="video-grid">
+      {videos.map((vid, index) => (
+        <div 
+          class={`video-card rank-${index + 1} reveal reveal-scale delay-${(index + 1) * 200}`}
+          style={`--rank-color: ${vid.color}`}
+        >
+          <span class="rank-badge">{vid.rank}</span>
+          <div class="video-container">
+            <iframe
+              src={`https://www.youtube.com/embed/${vid.id}`}
+              title={vid.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen></iframe>
+          </div>
+          <div class="info">
+            <h2>{vid.title}</h2>
+            <p>{vid.desc}</p>
+          </div>
+        </div>
+      ))}
+    </div>
   </main>
 </Layout>
