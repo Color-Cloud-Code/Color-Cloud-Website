@@ -12,7 +12,7 @@ const pageTitle = "Top Music of the Day - Color Cloud";
 function getMusicData(platz: string) {
   try {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const filePath = path.join(__dirname, 'Music-Of-the-Day', platz, 'music.txt');
+    const filePath = path.join(__dirname, 'Music-Of-The-Day', platz, 'music.txt');
     
     if (fs.existsSync(filePath)) {
       const rawContent = fs.readFileSync(filePath, 'utf-8');
